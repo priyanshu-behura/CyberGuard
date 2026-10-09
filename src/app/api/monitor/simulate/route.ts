@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (scenarioId) {
-      const scenarioResult = monitorStore.runDemoScenario(scenarioId as DemoScenarioId);
+      const scenarioResult = await monitorStore.injectScenario(String(scenarioId));
       return NextResponse.json({
         success: true,
         message: `Executed scenario: ${scenarioResult.title}`,

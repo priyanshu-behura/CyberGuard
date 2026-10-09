@@ -14,9 +14,9 @@ import { GoogleGenAI } from "@google/genai";
 import { AIAssistantMode, AIMessage, AIProviderStatus, ToolInvocation } from "./types";
 import { executeSecurityTool } from "./tools";
 
-export const GEMINI_PRIMARY_MODEL = "gemini-3.5-flash";
-export const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
-export const GEMINI_SECONDARY_FALLBACK = "gemini-3.6-flash";
+export const GEMINI_PRIMARY_MODEL = "gemini-3.5-flash-lite";
+export const GEMINI_FALLBACK_MODEL = "gemini-3.8-flash";
+export const GEMINI_SECONDARY_FALLBACK = "gemini-flash-latest";
 
 /**
  * System Instructions for General AI Mode
@@ -141,7 +141,7 @@ export async function executeGeminiCompletion(params: {
     contents[0].role = "user" as const;
   }
 
-  const timeoutMs = 25000;
+  const timeoutMs = 35000;
   const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
     let timer: NodeJS.Timeout;
     const timeout = new Promise<never>((_, reject) => {

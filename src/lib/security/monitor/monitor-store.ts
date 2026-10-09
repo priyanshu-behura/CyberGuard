@@ -545,6 +545,10 @@ class MonitorStore {
           posture: this.getPosture(),
         };
       }
+
+      default: {
+        return this.runDemoScenario("normal_login");
+      }
     }
   }
 
