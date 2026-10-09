@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Shield, Menu, X, ArrowRight } from "lucide-react";
+import { Shield, Menu, X, ArrowRight, Lock, ChevronRight, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth/auth-context";
 
 const navLinks = [
-  { name: "Product", href: "/#product-preview" },
-  { name: "Capabilities", href: "/#capabilities" },
   { name: "How It Works", href: "/#how-it-works" },
+  { name: "Capabilities", href: "/#capabilities" },
+  { name: "Security", href: "/security" },
   { name: "About", href: "/about" },
 ];
 
@@ -31,69 +31,110 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-[#FAF7F2]/95 backdrop-blur-md border-b border-slate-200/60 shadow-sm py-4"
-          : "bg-transparent border-b border-transparent py-6"
+          ? "bg-[#07090e]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-lg shadow-black/40 py-3.5"
+          : "bg-transparent border-b border-transparent py-5"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* Brand Wordmark matching Image 1 */}
+          {/* Logo / Wordmark */}
           <Link
             href="/"
-            className="flex items-center gap-3 group focus:outline-none"
+            className="flex items-center gap-2.5 group focus:outline-none"
             aria-label="CYBERGUARD Home"
           >
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-[#3B82F6] via-[#6366F1] to-[#8B5CF6] text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              <Shield className="w-4 h-4 fill-white/20 text-white" />
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 text-cyan-400 group-hover:border-cyan-400 transition-colors">
+              <Shield className="w-5 h-5 transition-transform duration-300 group-hover:scale-105" />
+              <div className="absolute inset-0 rounded-xl bg-cyan-400/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <span className="font-extrabold text-base tracking-wider text-[#0B132B]">
-              CYBERGUARD
-            </span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-lg tracking-wider text-white">
+                  CYBER<span className="text-cyan-400">GUARD</span>
+                </span>
+                <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono uppercase rounded bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">
+                  AI DEFENSE
+                </span>
+              </div>
+            </div>
           </Link>
 
-          {/* Desktop Navigation Links matching Image 1 */}
+          {/* Desktop Navigation Links */}
           <nav
-            className="hidden md:flex items-center gap-8"
+            className="hidden md:flex items-center gap-1 bg-slate-900/40 p-1.5 rounded-full border border-white/[0.06] backdrop-blur-md"
             aria-label="Main Navigation"
           >
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium text-[#1E293B] hover:text-[#6366F1] transition-colors"
+                className="px-4 py-1.5 text-sm font-medium text-slate-300 hover:text-white rounded-full transition-colors hover:bg-white/[0.06]"
               >
                 {link.name}
               </Link>
             ))}
           </nav>
 
-          {/* Desktop Right CTA matching Image 1 */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link
-              href={isAuthenticated ? "/dashboard" : "/login"}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0B132B] hover:bg-[#1E293B] text-white text-xs font-semibold tracking-wide shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <span>Launch CYBERGUARD</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+          {/* Desktop Right CTA */}
+          <div className="hidden md:flex items-center gap-3">
+            {isAuthenticated ? (
+              <Button
+                href="/dashboard"
+                size="sm"
+                variant="primary"
+                icon={<ArrowRight className="w-3.5 h-3.5" />}
+              >
+                Dashboard
+              </Button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-slate-300 hover:text-white px-3.5 py-2 rounded-lg transition-colors hover:bg-white/[0.04]"
+                >
+                  Login
+                </Link>
+                <Button
+                  href="/signup"
+                  size="sm"
+                  variant="primary"
+                  icon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
           <div className="flex md:hidden items-center gap-2">
-            <Link
-              href={isAuthenticated ? "/dashboard" : "/login"}
-              className="px-4 py-2 rounded-full bg-[#0B132B] text-white text-xs font-medium"
-            >
-              Launch
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className="text-xs font-medium text-cyan-400 px-2.5 py-1.5 rounded-md hover:bg-white/5"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="text-xs font-medium text-slate-300 px-2.5 py-1.5 rounded-md hover:bg-white/5"
+              >
+                Login
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-[#0B132B] hover:bg-black/5 focus:outline-none"
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -101,30 +142,57 @@ export function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200/80 bg-[#FAF7F2]/98 backdrop-blur-2xl px-5 pt-3 pb-6 space-y-4 shadow-lg animate-in fade-in duration-150">
+        <div className="md:hidden border-b border-white/10 bg-[#0a0e17]/95 backdrop-blur-2xl px-5 pt-3 pb-6 space-y-4 animate-in fade-in duration-150">
           <nav className="flex flex-col space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-[#1E293B] hover:bg-black/5 hover:text-[#0B132B] transition-colors"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-white/[0.06] hover:text-white transition-colors"
               >
                 <span>{link.name}</span>
-                <span className="text-xs font-mono text-slate-400">→</span>
+                <ChevronRight className="w-4 h-4 text-slate-500" />
               </Link>
             ))}
           </nav>
 
-          <div className="pt-3 border-t border-slate-200/80 flex flex-col gap-2.5">
-            <Link
-              href={isAuthenticated ? "/dashboard" : "/login"}
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-[#0B132B] text-white text-sm font-semibold tracking-wide shadow-md"
-            >
-              <span>Launch CYBERGUARD</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+          <div className="pt-3 border-t border-white/10 flex flex-col gap-2.5">
+            {isAuthenticated ? (
+              <Button
+                href="/dashboard"
+                variant="primary"
+                size="md"
+                className="w-full justify-center"
+                onClick={() => setMobileMenuOpen(false)}
+                icon={<ArrowRight className="w-4 h-4" />}
+              >
+                Go to Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  href="/signup"
+                  variant="primary"
+                  size="md"
+                  className="w-full justify-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                  icon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Get Started Free
+                </Button>
+                <Button
+                  href="/login"
+                  variant="secondary"
+                  size="md"
+                  className="w-full justify-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                  icon={<Lock className="w-4 h-4" />}
+                >
+                  Sign In to Platform
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

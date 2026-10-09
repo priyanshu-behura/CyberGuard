@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "cyan";
+  variant?: "primary" | "secondary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   href?: string;
   icon?: React.ReactNode;
@@ -19,7 +19,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#805BFF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08090D] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] select-none";
+    "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07090e] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
 
   const sizeStyles = {
     sm: "px-3.5 py-1.5 text-xs gap-1.5",
@@ -29,15 +29,13 @@ export function Button({
 
   const variantStyles = {
     primary:
-      "bg-[#805BFF] hover:bg-[#7046fd] text-[#F5F5FA] shadow-lg shadow-[#805BFF]/25 hover:shadow-[#805BFF]/40 border border-white/15 hover:brightness-105",
+      "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 hover:brightness-110 border border-cyan-400/30",
     secondary:
-      "bg-[#171923] hover:bg-[#202330] text-[#F5F5FA] border border-white/10 hover:border-white/20 shadow-sm",
+      "bg-slate-800/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 hover:border-slate-600 shadow-sm",
     outline:
-      "border border-white/15 hover:border-[#805BFF]/60 text-[#F5F5FA] hover:bg-[#805BFF]/10 shadow-sm",
-    cyan:
-      "bg-[#39DCE5] hover:bg-[#2bcdd6] text-[#08090D] font-semibold shadow-lg shadow-[#39DCE5]/20 hover:shadow-[#39DCE5]/35",
+      "border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 hover:border-cyan-400 shadow-sm",
     ghost:
-      "text-[#9CA3B5] hover:text-[#F5F5FA] hover:bg-white/[0.05]",
+      "text-slate-300 hover:text-white hover:bg-white/5",
   };
 
   const classes = `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`;

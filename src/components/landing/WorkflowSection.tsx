@@ -1,50 +1,59 @@
-"use client";
-
 import React from "react";
-import { Radar, Tag, Gauge, HelpCircle, BellRing, ShieldAlert } from "lucide-react";
+import {
+  Radar,
+  Tag,
+  Gauge,
+  HelpCircle,
+  ShieldAlert,
+  ArrowRight,
+} from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
-const workflowPhases = [
+const workflowSteps = [
   {
     step: "01",
-    phase: "DETECTION",
-    title: "Continuous Ingestion",
-    description: "Captures messages, URLs, audio notes, and auth events across digital touchpoints.",
+    label: "DETECT",
     icon: Radar,
+    title: "Continuous Ingestion",
+    description:
+      "Captures suspicious messages, links, media, account logins, and API triggers across communication and auth channels.",
+    accent: "border-cyan-500/40 text-cyan-400 bg-cyan-950/40",
   },
   {
     step: "02",
-    phase: "CLASSIFICATION",
-    title: "Vector Identification",
-    description: "Categorizes indicators into exact threat types—from spoofed domains to synthetic voices.",
+    label: "CLASSIFY",
     icon: Tag,
+    title: "Vector Identification",
+    description:
+      "Categorizes threats into exact taxonomy—from synthetic voice cloning to brand impersonation and token exfiltration.",
+    accent: "border-sky-500/40 text-sky-400 bg-sky-950/40",
   },
   {
     step: "03",
-    phase: "RISK ASSESSMENT",
-    title: "Calibrated Scoring",
-    description: "Computes a normalized 0-100 severity index factoring blast radius and attack probability.",
+    label: "ASSESS RISK",
     icon: Gauge,
+    title: "Calibrated Risk Scoring",
+    description:
+      "Computes a transparent 0-100 severity index factoring exploit likelihood, attacker profile, and blast radius.",
+    accent: "border-blue-500/40 text-blue-400 bg-blue-950/40",
   },
   {
     step: "04",
-    phase: "EXPLANATION",
-    title: "Forensic Evidence",
-    description: "Surfaces the exact rationale: highlighted language cues, acoustic spectrogram shifts, or DNS gaps.",
+    label: "EXPLAIN",
     icon: HelpCircle,
+    title: "Explainable Evidence",
+    description:
+      "Reveals the exact 'why' behind the score: highlighted language cues, synthetic artifacts, or mismatched DNS records.",
+    accent: "border-indigo-500/40 text-indigo-400 bg-indigo-950/40",
   },
   {
     step: "05",
-    phase: "ALERT",
-    title: "Actionable Notification",
-    description: "Dispatches prioritized notifications to the operator console with zero notification noise.",
-    icon: BellRing,
-  },
-  {
-    step: "06",
-    phase: "RECOMMENDED RESPONSE",
-    title: "Governed Playbooks",
-    description: "Provides pre-staged containment actions with mandatory human approval before execution.",
+    label: "RESPOND",
     icon: ShieldAlert,
+    title: "Guided Remediation",
+    description:
+      "Delivers tailored, prioritized next steps—from isolating a session to taking down a clone domain with one click.",
+    accent: "border-cyan-400 text-cyan-300 bg-cyan-900/40",
   },
 ];
 
@@ -52,64 +61,67 @@ export function WorkflowSection() {
   return (
     <section
       id="how-it-works"
-      className="py-24 lg:py-32 relative border-t border-slate-200/80 bg-[#FAF7F2] overflow-hidden"
+      className="py-20 lg:py-28 relative border-t border-white/[0.06] bg-[#07090e] cyber-grid-lines"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="max-w-3xl mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200/60 text-xs font-semibold text-[#4F46E5]">
-            <Radar className="w-3.5 h-3.5 text-[#4F46E5]" />
-            <span>HOW IT WORKS</span>
-          </div>
-          <h2 className="font-editorial-serif text-3xl sm:text-5xl font-medium text-[#0B132B] tracking-tight leading-[1.08]">
-            From initial detection<br />
-            <span className="text-[#4F46E5] italic">to governed containment.</span>
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+          <Badge variant="blue">SYSTEM ARCHITECTURE WORKFLOW</Badge>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            How CYBERGUARD Works
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            The complete 6-stage lifecycle engineered to deliver decisive threat mitigation with total human control.
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
+            From raw indicator detection to transparent explanations and guided
+            remediation: a 5-stage defensive loop built for clarity.
           </p>
         </div>
 
-        {/* 6-Phase Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {workflowPhases.map((phase) => {
-            const Icon = phase.icon;
+        {/* 5-Step Process Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+          {workflowSteps.map((step, index) => {
+            const Icon = step.icon;
             return (
               <div
-                key={phase.step}
-                className="rounded-3xl p-7 bg-white border border-slate-200/90 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-lg transition-all flex flex-col justify-between space-y-4 group"
+                key={step.step}
+                className="relative glass-panel rounded-2xl p-6 border border-white/[0.08] flex flex-col justify-between group hover:border-cyan-500/30 transition-colors"
               >
+                {/* Step Index & Badge */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-3xl font-editorial-serif font-semibold text-slate-300 group-hover:text-[#4F46E5] transition-colors">
-                      {phase.step}
+                    <span className="text-2xl font-mono font-bold text-slate-600 group-hover:text-cyan-400/80 transition-colors">
+                      {step.step}
                     </span>
-                    <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">
-                      {phase.phase}
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono tracking-wider font-semibold border uppercase bg-slate-900/80 border-slate-700 text-slate-300">
+                      {step.label}
                     </span>
                   </div>
 
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-[#4F46E5] flex items-center justify-center mb-3">
-                    <Icon className="w-5 h-5" />
+                  {/* Icon */}
+                  <div
+                    className={`w-12 h-12 rounded-xl border flex items-center justify-center mb-4 ${step.accent}`}
+                  >
+                    <Icon className="w-6 h-6" />
                   </div>
 
-                  <h3 className="text-base font-bold text-[#0B132B] mb-1.5">
-                    {phase.title}
+                  {/* Title & Description */}
+                  <h3 className="text-base font-bold text-white mb-2">
+                    {step.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    {phase.description}
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    {step.description}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 text-[10px] font-mono text-slate-400">
-                  CYBERGUARD CORE ENGINE
-                </div>
+                {/* Subtle connection marker on desktop */}
+                {index < workflowSteps.length - 1 && (
+                  <div className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-slate-600">
+                    <ArrowRight className="w-5 h-5 text-cyan-500/40" />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
-
       </div>
     </section>
   );

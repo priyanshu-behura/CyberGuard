@@ -12,7 +12,7 @@ export function AppShell({ children }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] text-[#0B132B] flex flex-col antialiased selection:bg-indigo-500/20 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#07090e] text-[#f1f5f9] flex flex-col antialiased selection:bg-cyan-500/20 selection:text-cyan-200">
       {/* Sidebar (Desktop Fixed + Mobile Drawer) */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

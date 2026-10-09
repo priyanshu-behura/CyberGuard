@@ -10,7 +10,11 @@ import {
   UserCheck,
   ArrowRight,
   Shield,
+  ShieldAlert,
   Sparkles,
+  Activity,
+  Layers,
+  History,
 } from "lucide-react";
 import { IdentityForm, IdentityFormData } from "@/components/identity/IdentityForm";
 import { RiskAssessment } from "@/components/identity/RiskAssessment";
@@ -38,7 +42,9 @@ export default function IdentityHubPage() {
       icon: ImageIcon,
       href: "/identity/image",
       badge: "EXIF & Artifact Forensics",
-      accent: "text-[#6366F1]",
+      color: "from-cyan-950/40 via-slate-900/90 to-slate-900",
+      accent: "text-cyan-400",
+      border: "border-cyan-500/30 hover:border-cyan-400",
     },
     {
       id: "video",
@@ -47,8 +53,10 @@ export default function IdentityHubPage() {
       description: "Detect synthetic face swaps, temporal frame flickering, boundary blending anomalies, and audio/video desync.",
       icon: Video,
       href: "/identity/video",
-      badge: "Keyframe Inspection",
-      accent: "text-[#8B5CF6]",
+      badge: "Temporal Keyframe Inspection",
+      color: "from-blue-950/40 via-slate-900/90 to-slate-900",
+      accent: "text-blue-400",
+      border: "border-blue-500/30 hover:border-blue-400",
     },
     {
       id: "audio",
@@ -57,8 +65,10 @@ export default function IdentityHubPage() {
       description: "Evaluate acoustic envelopes, sampling frequencies (22.05kHz vocoders), and synthetic voice clone signatures.",
       icon: Music,
       href: "/identity/audio",
-      badge: "Voice Clone Check",
-      accent: "text-purple-600",
+      badge: "Spectral & Voice Clone Check",
+      color: "from-violet-950/40 via-slate-900/90 to-slate-900",
+      accent: "text-violet-400",
+      border: "border-violet-500/30 hover:border-violet-400",
     },
     {
       id: "identity",
@@ -67,8 +77,10 @@ export default function IdentityHubPage() {
       description: "Correlate claimed persona, communication urgency, financial solicitations, and linked destination domains.",
       icon: UserCheck,
       href: "#impersonation-section",
-      badge: "Social Correlation",
-      accent: "text-emerald-600",
+      badge: "Multi-Vector Social Correlation",
+      color: "from-emerald-950/40 via-slate-900/90 to-slate-900",
+      accent: "text-emerald-400",
+      border: "border-emerald-500/30 hover:border-emerald-400",
       onClick: () => {
         setActiveTab("impersonation");
         const el = document.getElementById("impersonation-section");
@@ -110,29 +122,32 @@ export default function IdentityHubPage() {
 
   return (
     <AppShell>
-      <div className="space-y-8 pb-16 select-none max-w-6xl mx-auto">
-        
+      <div className="space-y-10 pb-16">
         {/* Hero Header */}
-        <div className="pb-2 border-b border-slate-200/80">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-[#6366F1] border border-indigo-200 mb-2">
-            <Shield className="w-3.5 h-3.5 text-[#6366F1]" />
-            <span>IDENTITY & MEDIA INTELLIGENCE</span>
+        <div className="relative overflow-hidden rounded-2xl glass-panel p-6 sm:p-8 border border-white/[0.1] shadow-xl">
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+          <div className="relative z-10 max-w-3xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+              <Shield className="w-3.5 h-3.5 text-cyan-400" />
+              <span>IDENTITY & MEDIA INTELLIGENCE</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
+              Authenticity, Synthetic Media & Impersonation Defense
+            </h1>
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+              Verify whether an image, video, audio recording, or identity claim shows signs of manipulation,
+              impersonation, or synthetic generation using deterministic binary forensics and contextual correlation.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-[#0B132B] tracking-tight">
-            Authenticity, Synthetic Media & Impersonation Defense
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Verify whether an image, video, audio recording, or identity claim shows signs of manipulation or synthetic generation.
-          </p>
         </div>
 
         {/* 4 Choices Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-mono uppercase tracking-widest text-slate-500 font-semibold">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
               SELECT ANALYSIS VECTOR
             </h2>
-            <span className="text-xs font-semibold text-[#6366F1]">4 Active Inspection Engines</span>
+            <span className="text-xs font-mono text-cyan-400">4 Active Inspection Engines</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -142,15 +157,15 @@ export default function IdentityHubPage() {
 
               const CardContent = (
                 <div
-                  className="group h-full rounded-2xl p-6 border border-slate-200/90 bg-white hover:border-[#6366F1]/50 hover:shadow-lg transition-all flex flex-col justify-between space-y-6 cursor-pointer shadow-sm"
+                  className={`group h-full glass-panel rounded-2xl p-6 border ${opt.border} bg-gradient-to-br ${opt.color} hover:shadow-xl hover:shadow-cyan-950/40 transition-all flex flex-col justify-between space-y-6 cursor-pointer`}
                   onClick={opt.onClick}
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-[#6366F1] flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
+                      <div className={`w-12 h-12 rounded-xl bg-slate-900/80 border border-white/[0.08] ${opt.accent} flex items-center justify-center group-hover:scale-105 transition-transform shadow-md`}>
                         <Icon className="w-6 h-6" />
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold uppercase bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-white/[0.04] text-slate-300 border border-white/[0.06]">
                         {opt.badge}
                       </span>
                     </div>
@@ -159,16 +174,16 @@ export default function IdentityHubPage() {
                       <div className="text-xs font-mono font-bold tracking-wider text-slate-400">
                         {opt.title}
                       </div>
-                      <h3 className="text-base font-bold text-[#0B132B] group-hover:text-[#6366F1] transition-colors">
+                      <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
                         {opt.subtitle}
                       </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed pt-1">
+                      <p className="text-xs text-slate-300 leading-relaxed pt-1">
                         {opt.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6366F1] group-hover:translate-x-1 transition-transform pt-3 border-t border-slate-100">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform pt-3 border-t border-white/[0.06]">
                     <span>Begin Inspection</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
@@ -187,39 +202,35 @@ export default function IdentityHubPage() {
         </div>
 
         {/* Impersonation Workflow Section */}
-        <div id="impersonation-section" className="space-y-6 pt-6 border-t border-slate-200/80">
+        <div id="impersonation-section" className="space-y-6 pt-6 border-t border-white/[0.08]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-emerald-600" />
-                <h2 className="text-base sm:text-lg font-bold text-[#0B132B]">
+                <UserCheck className="w-4 h-4 text-emerald-400" />
+                <h2 className="text-base sm:text-lg font-bold text-white">
                   Digital Impersonation & Social Context Verification
                 </h2>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-400">
                 Correlate claimed persona (University, Executive, Regulatory, Bank) with communication pressure,
                 financial requests, and credentials.
               </p>
             </div>
-            <span className="text-xs font-mono text-emerald-700 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 font-semibold">
+            <span className="text-xs font-mono text-emerald-400 px-2.5 py-1 rounded bg-emerald-950/40 border border-emerald-500/30">
               Interactive Workflow
             </span>
           </div>
 
-          <div className="rounded-2xl p-6 bg-white border border-slate-200/90 shadow-sm">
-            <IdentityForm onSubmit={handleRunImpersonation} isAnalyzing={isAnalyzing} />
-          </div>
+          <IdentityForm onSubmit={handleRunImpersonation} isAnalyzing={isAnalyzing} />
 
           {/* Stepped Progress */}
           {isAnalyzing && (
-            <div className="rounded-2xl p-6 bg-white border border-slate-200/90 shadow-sm">
-              <AnalysisProgress type="identity" currentStepIndex={currentStepIndex} />
-            </div>
+            <AnalysisProgress type="identity" currentStepIndex={currentStepIndex} />
           )}
 
           {/* Results Display */}
           {impersonationResult && !isAnalyzing && (
-            <div className="space-y-6 animate-in fade-in duration-300 pt-2">
+            <div className="space-y-8 animate-fadeIn pt-4">
               <RiskAssessment result={impersonationResult} />
               <ManipulationIndicators indicators={impersonationResult.indicators} />
               <EvidenceCard

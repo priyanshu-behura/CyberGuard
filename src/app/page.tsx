@@ -2,47 +2,43 @@ import React from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/landing/Hero";
-import { ProblemSection } from "@/components/landing/ProblemSection";
-import { ConnectedIntelligenceSection } from "@/components/landing/ConnectedIntelligenceSection";
-import { AttackStorySection } from "@/components/landing/AttackStorySection";
+import { TrustSection } from "@/components/landing/TrustSection";
 import { WorkflowSection } from "@/components/landing/WorkflowSection";
 import { CapabilitiesSection } from "@/components/landing/CapabilitiesSection";
+import { WhyItMattersSection } from "@/components/landing/WhyItMattersSection";
 import { ProductPreview } from "@/components/landing/ProductPreview";
 import { CTASection } from "@/components/landing/CTASection";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAF7F2] text-[#0B132B] selection:bg-[#4F46E5]/20 selection:text-[#0B132B]">
-      {/* SECTION 1: Minimal Warm Editorial Navbar matching Image 1 */}
+    <div className="flex flex-col min-h-screen">
+      {/* SECTION 1: Clean Premium Navbar */}
       <Navbar />
 
       <main className="flex-1">
-        {/* SECTION 2: Hero with Shattered AI-Human Portrait matching Image 1 */}
+        {/* SECTION 2: Hero */}
         <Hero />
 
-        {/* SECTION A: The Problem — Fragmented Signals */}
-        <ProblemSection />
+        {/* SECTION 3: Trust & Purpose */}
+        <TrustSection />
 
-        {/* SECTION B: Connected Intelligence — Signal Fusion */}
-        <ConnectedIntelligenceSection />
-
-        {/* SECTION C: The Attack Story — Signal to Explanation */}
-        <AttackStorySection />
-
-        {/* SECTION D: Workflow — Detection to Governed Response */}
+        {/* SECTION 4: How CYBERGUARD Works (5-Step Lifecycle) */}
         <WorkflowSection />
 
-        {/* SECTION E: Verified Core Capabilities */}
+        {/* SECTION 5: Core Capabilities (5 Pillars) */}
         <CapabilitiesSection />
 
-        {/* SECTION F: Console Interface Preview */}
+        {/* SECTION 6: Why It Matters (Blended Multi-Vector Attacks) */}
+        <WhyItMattersSection />
+
+        {/* SECTION 7: Simple Product Preview */}
         <ProductPreview />
 
-        {/* SECTION G: Final CTA — Make Every Signal Count */}
+        {/* SECTION 8: Final CTA */}
         <CTASection />
       </main>
 
-      {/* SECTION 9: Editorial Footer */}
+      {/* SECTION 9: Clean Footer */}
       <Footer />
     </div>
   );

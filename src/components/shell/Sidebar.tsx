@@ -5,24 +5,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Shield,
-  Plus,
-  Bot,
-  BrainCircuit,
-  ShieldCheck,
   LayoutDashboard,
-  Activity,
-  ShieldAlert,
-  Settings,
-  Mail,
-  Fingerprint,
-  Search,
+  SearchCheck,
   ScanFace,
-  X,
-  FileCode,
+  Activity,
   GitFork,
+  AlertTriangle,
+  ShieldAlert,
+  Terminal,
+  Settings,
+  X,
   Radio,
+  Sparkles,
 } from "lucide-react";
-import { useAuth } from "@/lib/auth/auth-context";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -31,30 +26,43 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
 
-  const displayName = user?.name || "Priyanshu Behura";
-  const userInitials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase();
+  const mainNavItems = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Analyze", href: "/analyze", icon: SearchCheck },
+    { name: "Identity & Media", href: "/identity", icon: ScanFace },
+    { name: "Monitor", href: "/monitor", icon: Activity },
+    { name: "Attack Chains", href: "/attack-chains", icon: GitFork },
+    { name: "Incidents", href: "/incidents", icon: AlertTriangle },
+    { name: "Response", href: "/response", icon: ShieldAlert },
+  ];
+
+  const secondaryNavItems = [
+    { name: "AI Center", href: "/ai", icon: Sparkles },
+    { name: "Settings", href: "/settings", icon: Settings },
+  ];
 
   const navContent = (
-    <div className="flex flex-col h-full bg-[#0B0E17] text-white w-64 select-none border-r border-[#171B26]">
+    <div className="flex flex-col h-full bg-[#0a0e17] border-r border-white/[0.08] w-64 select-none">
       {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.06]">
+      <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.08]">
         <Link
           href="/dashboard"
-          className="flex items-center gap-3 group focus:outline-none"
+          className="flex items-center gap-2.5 group focus:outline-none"
         >
-          <div className="relative flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-tr from-[#3B82F6] via-[#6366F1] to-[#8B5CF6] text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <Shield className="w-4 h-4 fill-white/20 text-white" />
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 text-cyan-400 group-hover:border-cyan-400 transition-colors shadow-sm shadow-cyan-950/40">
+            <Shield className="w-4 h-4" />
           </div>
-          <span className="font-extrabold text-sm tracking-widest text-[#F5F5FA]">
-            CYBERGUARD
-          </span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-sm tracking-wider text-white">
+                CYBER<span className="text-cyan-400">GUARD</span>
+              </span>
+            </div>
+            <span className="text-[9px] font-mono text-slate-400 tracking-wider uppercase">
+              SECURITY INTELLIGENCE PLATFORM
+            </span>
+          </div>
         </Link>
 
         {/* Mobile Close Button */}
@@ -68,232 +76,98 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* Main Navigation Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 scrollbar-thin">
-        {/* + New Chat Button matching Image 2 */}
-        <Link
-          href="/ai"
-          onClick={onClose}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] hover:from-[#5558E6] hover:to-[#7C4EE8] text-white text-xs font-semibold tracking-wide shadow-md shadow-indigo-500/25 transition-all duration-150 hover:scale-[1.01] active:scale-[0.99]"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>New Chat</span>
-        </Link>
-
-        {/* AI Group matching Image 2 */}
-        <div className="space-y-1">
-          <Link
-            href="/ai"
-            onClick={onClose}
-            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-              pathname === "/ai"
-                ? "bg-[#1E2235] text-white shadow-sm font-semibold"
-                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-            }`}
-          >
-            <Bot className="w-4 h-4 text-[#8B5CF6]" />
-            <span>AI Center</span>
-          </Link>
-
-          <Link
-            href="/ai?mode=general"
-            onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-all"
-          >
-            <BrainCircuit className="w-4 h-4 text-[#6366F1]" />
-            <span>General AI</span>
-          </Link>
-
-          <Link
-            href="/ai?mode=cybersecurity"
-            onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-all"
-          >
-            <ShieldCheck className="w-4 h-4 text-[#38BDF8]" />
-            <span>Cybersecurity Intelligence</span>
-          </Link>
-        </div>
-
-        {/* Security Group matching Image 2 */}
+      {/* Navigation List */}
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        {/* Primary Group */}
         <div>
-          <div className="px-3 mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
-            Security
+          <div className="px-3 mb-2 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+            Intelligence Modules
           </div>
-          <div className="space-y-1">
-            <Link
-              href="/dashboard"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                pathname === "/dashboard"
-                  ? "bg-[#1E2235] text-white shadow-sm font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4 text-slate-400" />
-              <span>Dashboard</span>
-            </Link>
+          <nav className="space-y-1">
+            {mainNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-            <Link
-              href="/monitor"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                pathname.startsWith("/monitor")
-                  ? "bg-[#1E2235] text-white shadow-sm font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <Activity className="w-4 h-4 text-slate-400" />
-              <span>Threat Monitor</span>
-            </Link>
-
-            <Link
-              href="/response"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                pathname === "/response"
-                  ? "bg-[#1E2235] text-white shadow-sm font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <ShieldAlert className="w-4 h-4 text-slate-400" />
-              <span>Response Center</span>
-            </Link>
-
-            <Link
-              href="/settings"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                pathname === "/settings"
-                  ? "bg-[#1E2235] text-white shadow-sm font-semibold"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <Settings className="w-4 h-4 text-slate-400" />
-              <span>Settings</span>
-            </Link>
-          </div>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 shadow-sm shadow-cyan-950/40"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />
+                  )}
+                  <Icon
+                    className={`w-4 h-4 transition-colors shrink-0 ${
+                      isActive
+                        ? "text-cyan-400"
+                        : "text-slate-500 group-hover:text-slate-300"
+                    }`}
+                  />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
-        {/* Saved Sessions matching Image 2 */}
-        <div>
-          <div className="px-3 mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
-            Saved Sessions
-          </div>
-          <div className="space-y-1">
-            <Link
-              href="/ai?session=email"
-              onClick={onClose}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-all"
-            >
-              <Mail className="w-3.5 h-3.5 text-slate-500" />
-              <span className="truncate">Email Analysis</span>
-            </Link>
-
-            <Link
-              href="/ai?session=login"
-              onClick={onClose}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-all"
-            >
-              <Fingerprint className="w-3.5 h-3.5 text-slate-500" />
-              <span className="truncate">Login Investigation</span>
-            </Link>
-
-            <Link
-              href="/ai?session=threat"
-              onClick={onClose}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-all"
-            >
-              <Search className="w-3.5 h-3.5 text-slate-500" />
-              <span className="truncate">Threat Research</span>
-            </Link>
-
-            <Link
-              href="/ai?session=deepfake"
-              onClick={onClose}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-all"
-            >
-              <ScanFace className="w-3.5 h-3.5 text-slate-500" />
-              <span className="truncate">Deepfake Check</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Existing Modules Preservation Links */}
+        {/* Divider */}
         <div className="pt-2 border-t border-white/[0.06]">
-          <div className="px-3 mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
-            Deep Modules
+          <div className="px-3 mb-2 text-[10px] font-mono uppercase tracking-wider text-slate-500">
+            System Administration
           </div>
-          <div className="space-y-1">
-            <Link
-              href="/analyze"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                pathname.startsWith("/analyze")
-                  ? "bg-[#1E2235] text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <FileCode className="w-3.5 h-3.5 text-slate-500" />
-              <span>Threat Analysis</span>
-            </Link>
+          <nav className="space-y-1">
+            {secondaryNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-            <Link
-              href="/identity"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                pathname.startsWith("/identity")
-                  ? "bg-[#1E2235] text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <ScanFace className="w-3.5 h-3.5 text-slate-500" />
-              <span>Identity & Media</span>
-            </Link>
-
-            <Link
-              href="/attack-chains"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                pathname.startsWith("/attack-chains")
-                  ? "bg-[#1E2235] text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <GitFork className="w-3.5 h-3.5 text-slate-500" />
-              <span>Attack Chains</span>
-            </Link>
-
-            <Link
-              href="/incidents"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                pathname.startsWith("/incidents")
-                  ? "bg-[#1E2235] text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-              }`}
-            >
-              <Radio className="w-3.5 h-3.5 text-slate-500" />
-              <span>Incident Triage</span>
-            </Link>
-          </div>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 shadow-sm shadow-cyan-950/40"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-cyan-400 shadow-sm shadow-cyan-400/50" />
+                  )}
+                  <Icon
+                    className={`w-4 h-4 transition-colors shrink-0 ${
+                      isActive
+                        ? "text-cyan-400"
+                        : "text-slate-500 group-hover:text-slate-300"
+                    }`}
+                  />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </div>
 
-      {/* User Profile Footer matching Image 2 */}
-      <div className="p-3 border-t border-white/[0.06] bg-[#090C14]">
-        <div className="flex items-center gap-3 px-2 py-1.5 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
-            {userInitials || "P"}
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs font-semibold text-slate-200 truncate">
-              {displayName}
+      {/* Security Status Footer */}
+      <div className="p-3 border-t border-white/[0.08] bg-[#07090e]/60">
+        <div className="rounded-lg p-2.5 bg-slate-900/60 border border-white/[0.06] text-[11px] font-mono flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" />
-              <span className="text-[10px] text-slate-400 font-medium">Online</span>
-            </div>
+            <span className="text-slate-300 font-medium">Status: Protected</span>
           </div>
+          <span className="text-[10px] text-slate-500">Ready</span>
         </div>
       </div>
     </div>
@@ -310,10 +184,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
             onClick={onClose}
           />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#0B0E17] shadow-2xl animate-in slide-in-from-left duration-200">
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-[#0a0e17] shadow-2xl animate-in slide-in-from-left duration-200">
             {navContent}
           </div>
         </div>

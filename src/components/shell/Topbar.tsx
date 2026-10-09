@@ -116,13 +116,13 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <header className="sticky top-0 z-30 h-16 bg-[#0a0e17]/90 backdrop-blur-xl border-b border-white/[0.08] px-4 sm:px-6 lg:px-8 flex items-center justify-between shadow-sm">
         {/* Left Section: Mobile toggle + Breadcrumb & Page Title */}
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-[#0B132B] hover:bg-slate-100 transition-colors focus:outline-none"
+            className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors focus:outline-none"
             aria-label="Open sidebar"
           >
             <Menu className="w-5 h-5" />
@@ -130,13 +130,13 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
 
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
-              <Link href="/dashboard" className="hover:text-[#0B132B] transition-colors">
+              <Link href="/dashboard" className="hover:text-white transition-colors">
                 CYBERGUARD
               </Link>
               <span>/</span>
-              <span className="text-[#6366F1] font-semibold">{pageMeta.section}</span>
+              <span className="text-cyan-400 font-semibold">{pageMeta.section}</span>
             </div>
-            <h1 className="text-sm sm:text-base font-bold text-[#0B132B] tracking-tight leading-none mt-0.5">
+            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight leading-none mt-0.5">
               {pageMeta.title}
             </h1>
           </div>
@@ -145,8 +145,8 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
         {/* Right Section: System Indicator, Notifications & User Menu */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Live Guard Indicator */}
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-mono text-emerald-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[11px] font-mono text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-semibold">Active Guard</span>
           </div>
 
@@ -158,32 +158,32 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
                 setNotificationsOpen(!notificationsOpen);
                 setUserMenuOpen(false);
               }}
-              className="relative p-2 rounded-xl text-slate-500 hover:text-[#0B132B] hover:bg-slate-100 transition-colors focus:outline-none"
+              className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors focus:outline-none cursor-pointer"
               aria-label="Security notifications"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#6366F1] ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400 ring-2 ring-[#0a0e17]" />
             </button>
 
             {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white border border-slate-200/90 shadow-xl p-4 space-y-3 animate-in fade-in duration-150 z-50">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[#111622] border border-white/[0.08] shadow-2xl p-4 space-y-3 animate-in fade-in duration-150 z-50">
+                <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Security Alerts
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 text-[#6366F1] border border-indigo-200 font-semibold">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/40 text-cyan-300 border border-cyan-500/30 font-semibold">
                     0 Unread
                   </span>
                 </div>
 
                 <div className="py-6 text-center space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 text-slate-500 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <div className="w-10 h-10 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   </div>
-                  <p className="text-xs text-[#0B132B] font-semibold">
+                  <p className="text-xs text-white font-semibold">
                     No active threat alerts
                   </p>
-                  <p className="text-[11px] text-slate-500 max-w-[200px] mx-auto">
+                  <p className="text-[11px] text-slate-400 max-w-[200px] mx-auto">
                     Real-time anomalous telemetry triggers will stream to this console.
                   </p>
                 </div>
@@ -199,30 +199,30 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
                 setUserMenuOpen(!userMenuOpen);
                 setNotificationsOpen(false);
               }}
-              className="flex items-center gap-2 p-1 pl-2 pr-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition-all focus:outline-none"
+              className="flex items-center gap-2 p-1 pl-2 pr-2.5 rounded-xl bg-[#111622] hover:bg-white/5 border border-white/[0.08] transition-all focus:outline-none cursor-pointer"
               aria-label="User account menu"
             >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] text-white font-mono text-xs font-bold flex items-center justify-center shadow-sm">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 text-white font-mono text-xs font-bold flex items-center justify-center shadow-sm">
                 {userInitials || "CG"}
               </div>
-              <span className="hidden md:inline-block text-xs font-semibold text-[#0B132B] max-w-[120px] truncate">
+              <span className="hidden md:inline-block text-xs font-semibold text-slate-200 max-w-[120px] truncate">
                 {displayName}
               </span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" />
             </button>
 
             {userMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200/90 shadow-xl p-2 space-y-1 animate-in fade-in duration-150 z-50">
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#111622] border border-white/[0.08] shadow-2xl p-2 space-y-1 animate-in fade-in duration-150 z-50">
                 {/* User Details Header */}
-                <div className="px-3 py-2.5 border-b border-slate-100">
-                  <p className="text-xs font-bold text-[#0B132B] truncate">
+                <div className="px-3 py-2.5 border-b border-white/[0.08]">
+                  <p className="text-xs font-bold text-white truncate">
                     {displayName}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-mono truncate">
+                  <p className="text-[11px] text-slate-400 font-mono truncate">
                     {displayEmail}
                   </p>
                   <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-indigo-50 text-[#6366F1] border border-indigo-200 font-medium">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-cyan-950/40 text-cyan-300 border border-cyan-500/30 font-medium">
                       {user?.role || "Security Analyst"}
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
@@ -238,7 +238,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
                     setUserMenuOpen(false);
                     setProfileModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 hover:text-[#0B132B] hover:bg-slate-50 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-left"
                 >
                   <UserIcon className="w-3.5 h-3.5 text-slate-400" />
                   <span>Profile</span>
@@ -248,21 +248,21 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
                 <Link
                   href="/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-600 hover:text-[#0B132B] hover:bg-slate-50 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5 text-slate-400" />
                   <span>Settings</span>
                 </Link>
 
-                <div className="pt-1 border-t border-slate-100" />
+                <div className="pt-1 border-t border-white/[0.08]" />
 
                 {/* Sign Out */}
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer text-left"
                 >
-                  <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
                   <span>Sign Out</span>
                 </button>
               </div>

@@ -7,7 +7,10 @@ import {
   GitFork,
   ShieldAlert,
   ArrowRight,
-  Shield,
+  Cpu,
+  UserCheck,
+  Globe,
+  AlertTriangle,
   Layers,
   Sparkles,
 } from "lucide-react";
@@ -118,50 +121,52 @@ export default function AttackChainsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 pb-16 select-none max-w-6xl mx-auto">
-        
+      <div className="space-y-8 pb-16">
         {/* Header */}
-        <div className="pb-2 border-b border-slate-200/80">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-[#6366F1] border border-indigo-200 mb-2">
-            <GitFork className="w-3.5 h-3.5 text-[#6366F1]" />
-            <span>KILL-CHAIN CORRELATION GRAPH</span>
+        <div className="relative overflow-hidden rounded-2xl glass-panel p-6 sm:p-8 border border-white/[0.1] shadow-xl">
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+          <div className="relative z-10 max-w-3xl space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono uppercase bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+              <GitFork className="w-3.5 h-3.5 text-cyan-400" />
+              <span>KILL-CHAIN CORRELATION GRAPH</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Multi-Stage Attack Chain Correlation
+            </h1>
+            <p className="text-sm text-slate-300 leading-relaxed font-normal">
+              Correlate isolated security signals across phishing messages, synthetic deepfakes,
+              malicious URLs, and digital impersonation into unified adversary kill chains.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-[#0B132B] tracking-tight">
-            Multi-Stage Attack Chain Correlation
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Correlate isolated security signals across phishing messages, synthetic deepfakes,
-            malicious URLs, and digital impersonation into unified adversary kill chains.
-          </p>
         </div>
 
         {/* Live Incident Correlated Nodes (if real incidents exist) */}
         {incidents.length > 0 && (
-          <div className="rounded-2xl p-6 border border-rose-200 bg-rose-50/50 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-rose-200/60">
-              <div className="flex items-center gap-2 text-rose-700 font-bold text-sm">
-                <ShieldAlert className="w-4 h-4 text-rose-600" />
+          <div className="glass-panel rounded-2xl p-6 border border-rose-500/30 bg-slate-900/80 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2 text-rose-300 font-bold text-sm">
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
                 <span>Live Correlated Incident Pipeline ({incidents.length} Events)</span>
               </div>
-              <Link href="/incidents" className="text-xs font-semibold text-[#6366F1] hover:underline">
+              <Link href="/incidents" className="text-xs font-mono text-cyan-400 hover:underline">
                 View incident triage
               </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {incidents.map((inc) => (
+              {incidents.map((inc, i) => (
                 <div
                   key={inc.id}
-                  className="p-4 rounded-xl bg-white border border-rose-200/80 space-y-2 shadow-sm"
+                  className="p-4 rounded-xl bg-black/40 border border-white/[0.06] space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-rose-600">{inc.id}</span>
-                    <span className="text-[10px] font-mono uppercase text-slate-500">
+                    <span className="font-mono text-xs font-bold text-rose-400">{inc.id}</span>
+                    <span className="text-[10px] font-mono uppercase text-slate-400">
                       Stage: {inc.attackChainStage}
                     </span>
                   </div>
-                  <h4 className="text-sm font-semibold text-[#0B132B] truncate">{inc.title}</h4>
-                  <p className="text-xs text-slate-600 line-clamp-2">{inc.summary}</p>
+                  <h4 className="text-sm font-semibold text-white truncate">{inc.title}</h4>
+                  <p className="text-xs text-slate-400 line-clamp-2">{inc.summary}</p>
                 </div>
               ))}
             </div>
@@ -171,10 +176,10 @@ export default function AttackChainsPage() {
         {/* Interactive Topologies Selector */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-mono uppercase tracking-widest text-slate-500 font-semibold">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-slate-400 font-semibold">
               CORRELATED ATTACK CHAIN SCENARIOS
             </h2>
-            <span className="text-xs font-semibold text-[#6366F1]">MITRE ATT&CK Aligned</span>
+            <span className="text-xs font-mono text-cyan-400">MITRE ATT&CK Aligned</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -182,35 +187,35 @@ export default function AttackChainsPage() {
               <button
                 key={chain.id}
                 onClick={() => setActiveChainId(chain.id)}
-                className={`text-left p-4 rounded-2xl border transition-all ${
+                className={`text-left p-4 rounded-xl glass-panel border transition-all ${
                   activeChainId === chain.id
-                    ? "border-[#6366F1] bg-white shadow-md ring-1 ring-[#6366F1]/30"
-                    : "border-slate-200/90 hover:border-slate-300 bg-white shadow-sm"
+                    ? "border-cyan-400 bg-cyan-950/30 shadow-lg shadow-cyan-950/40"
+                    : "border-white/[0.08] hover:border-cyan-500/30 bg-slate-900/60"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase text-[#6366F1] font-semibold">
+                  <span className="text-[10px] font-mono uppercase text-cyan-400 font-semibold">
                     Target: {chain.target}
                   </span>
                   <span className="text-[10px] font-mono text-slate-400">
                     {chain.stages.length} Stages
                   </span>
                 </div>
-                <h3 className="text-sm font-bold text-[#0B132B] mt-1">{chain.title}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Threat Actor: {chain.threatActor}</p>
+                <h3 className="text-sm font-bold text-white mt-1">{chain.title}</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Threat Actor: {chain.threatActor}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* Selected Chain Stage Progression */}
-        <div className="rounded-2xl p-6 sm:p-8 border border-slate-200/90 bg-white shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-white/[0.08] space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
             <div>
-              <span className="text-[10px] font-mono uppercase text-[#6366F1] font-semibold">
+              <span className="text-[10px] font-mono uppercase text-cyan-400 font-semibold">
                 ACTIVE GRAPH TOPOLOGY
               </span>
-              <h3 className="text-lg font-bold text-[#0B132B] tracking-tight mt-0.5">
+              <h3 className="text-lg font-bold text-white tracking-tight mt-0.5">
                 {selectedChain.title}
               </h3>
             </div>
@@ -224,51 +229,49 @@ export default function AttackChainsPage() {
             {selectedChain.stages.map((stage, idx) => (
               <div
                 key={idx}
-                className="relative rounded-xl p-5 border border-slate-200 bg-[#F8F9FC] hover:border-[#6366F1]/50 transition-all space-y-3 flex flex-col justify-between"
+                className="relative rounded-xl p-5 border border-white/[0.08] bg-slate-900/80 hover:border-cyan-500/40 transition-all space-y-3 flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="w-6 h-6 rounded-full bg-indigo-50 border border-indigo-200 text-[#6366F1] font-mono text-xs font-bold flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold flex items-center justify-center">
                       {stage.stageNumber}
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40">
                       {stage.severity}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-[#0B132B]">{stage.stageName}</h4>
-                    <span className="text-[11px] font-mono text-[#6366F1] block mt-0.5 font-semibold">
+                    <h4 className="text-sm font-bold text-white">{stage.stageName}</h4>
+                    <span className="text-[11px] font-mono text-cyan-400 block mt-0.5">
                       {stage.mitreId} • {stage.technique}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 leading-relaxed pt-1">
+                  <p className="text-xs text-slate-300 leading-relaxed pt-1">
                     {stage.description}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-slate-400">
                   <span>Source:</span>
-                  <span className="text-[#0B132B] font-semibold">{stage.sourceType}</span>
+                  <span className="text-slate-200 font-semibold">{stage.sourceType}</span>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-700">
-            <span>
+          <div className="p-4 rounded-xl bg-black/40 border border-white/[0.05] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono">
+            <span className="text-slate-300">
               CYBERGUARD Automated Correlation: Single-point mitigation breaks attacker chain before fund exfiltration.
             </span>
-            <Link
-              href="/identity"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-xs font-semibold shadow-sm shrink-0 transition-colors"
-            >
-              Launch Identity Verification
+            <Link href="/identity">
+              <Button variant="primary" size="sm" className="shrink-0 text-xs font-mono">
+                Launch Identity Verification
+              </Button>
             </Link>
           </div>
         </div>
-
       </div>
     </AppShell>
   );

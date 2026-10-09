@@ -1,23 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import {
   Sparkles,
   Shield,
   Send,
   Loader2,
-  Paperclip,
-  Image as ImageIcon,
-  ArrowRight,
+  Trash2,
   Plus,
   PanelRightClose,
   PanelRightOpen,
-  Mail,
-  Fingerprint,
   AlertTriangle,
-  GitFork,
-  CheckCircle2,
+  Bot,
+  RefreshCw,
 } from "lucide-react";
 import {
   AIMessage,
@@ -26,7 +21,10 @@ import {
   AIProviderStatus,
 } from "@/lib/ai/types";
 import { AIChatStorage } from "@/lib/ai/chat-storage";
+import { ModeSelector } from "@/components/ai/ModeSelector";
+import { ChatSidebar } from "@/components/ai/ChatSidebar";
 import { ChatMessageItem } from "@/components/ai/ChatMessageItem";
+import { PromptSuggestions } from "@/components/ai/PromptSuggestions";
 import { IntelligenceSidebar } from "@/components/ai/IntelligenceSidebar";
 import { ReportModal } from "@/components/ai/ReportModal";
 import { incidentStore, SecurityIncident } from "@/lib/security/incident-store";
@@ -35,51 +33,14 @@ import { responseStore } from "@/lib/security/response/response-store";
 import { AccountSecurityPosture } from "@/lib/security/monitor/types";
 import { ResponseMetrics } from "@/lib/security/response/types";
 
-const STARTER_PROMPTS = [
-  {
-    id: "email",
-    title: "Analyze a suspicious email",
-    desc: "Check for phishing, malware and social engineering",
-    icon: Mail,
-    prompt: "Analyze a suspicious email containing an urgent wire transfer request and lookalike domain link.",
-  },
-  {
-    id: "login",
-    title: "Investigate unusual login activity",
-    desc: "Detect account takeover and suspicious access",
-    icon: Fingerprint,
-    prompt: "Investigate unusual concurrent login activity from unrecognized VPN IPs and evaluate ATO risk.",
-  },
-  {
-    id: "ato",
-    title: "Explain a possible account takeover",
-    desc: "Analyze patterns and explain the attack chain",
-    icon: AlertTriangle,
-    prompt: "Explain a possible account takeover attack chain starting from credential harvesting to session hijacking.",
-  },
-  {
-    id: "correlate",
-    title: "Correlate related security events",
-    desc: "Find connections across multiple signals",
-    icon: GitFork,
-    prompt: "Correlate related security events across our recent phishing alert, failed logins, and data exfiltration signals.",
-  },
-];
-
-function AICenterContent() {
-  const searchParams = useSearchParams();
-  const modeParam = searchParams.get("mode");
-  const sessionParam = searchParams.get("session");
-
-  const [mode, setMode] = useState<AIAssistantMode>(
-    modeParam === "general" ? "general" : "cybersecurity"
-  );
+export default function AICenterPage() {
+  const [mode, setMode] = useState<AIAssistantMode>("cybersecurity");
   const [conversations, setConversations] = useState<AIConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [providerStatus, setProviderStatus] = useState<AIProviderStatus | null>(null);
-  const [showTelemetryDrawer, setShowTelemetryDrawer] = useState(false);
+  const [showTelemetryDrawer, setShowTelemetryDrawer] = useState(true);
   const [activeReportIncidentId, setActiveReportIncidentId] = useState<string | null>(null);
 
   // Live telemetry states
@@ -92,6 +53,7 @@ function AICenterContent() {
 
   // 1. Initial hydration from client stores & status check
   useEffect(() => {
+    // Load conversations from local storage
     const storedConvs = AIChatStorage.getConversations();
     setConversations(storedConvs);
 
@@ -104,7 +66,8 @@ function AICenterContent() {
       setActiveConversationId(storedConvs[0].id);
       setMode(storedConvs[0].mode);
     } else {
-      const newConv = AIChatStorage.createNewConversation(undefined, mode);
+      // Create initial conversation
+      const newConv = AIChatStorage.createNewConversation(undefined, "cybersecurity");
       setConversations([newConv]);
       setActiveConversationId(newConv.id);
     }
@@ -133,25 +96,7 @@ function AICenterContent() {
     }
   }, []);
 
-  // Update mode if query param changes
-  useEffect(() => {
-    if (modeParam === "general" && mode !== "general") {
-      setMode("general");
-    } else if (modeParam === "cybersecurity" && mode !== "cybersecurity") {
-      setMode("cybersecurity");
-    }
-  }, [modeParam]);
-
-  // Handle session query param (e.g. ?session=email)
-  useEffect(() => {
-    if (sessionParam) {
-      const match = STARTER_PROMPTS.find((p) => p.id === sessionParam);
-      if (match) {
-        setInputMessage(match.prompt);
-      }
-    }
-  }, [sessionParam]);
-
+  // 2. Auto-scroll on message updates
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
   const messages = activeConversation?.messages || [];
 
@@ -159,18 +104,64 @@ function AICenterContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Handle New Chat
+  // 3. New Conversation
   const handleNewChat = (newMode?: AIAssistantMode) => {
     const targetMode = newMode || mode;
     const newConv = AIChatStorage.createNewConversation(undefined, targetMode);
     setConversations(AIChatStorage.getConversations());
     setActiveConversationId(newConv.id);
     setMode(targetMode);
-    setInputMessage("");
     if (textareaRef.current) textareaRef.current.focus();
   };
 
-  // Send Message using Gemini API
+  // 4. Select Conversation
+  const handleSelectConversation = (id: string) => {
+    AIChatStorage.setActiveConversationId(id);
+    setActiveConversationId(id);
+    const conv = conversations.find((c) => c.id === id);
+    if (conv) setMode(conv.mode);
+  };
+
+  // 5. Delete Conversation
+  const handleDeleteConversation = (id: string) => {
+    AIChatStorage.deleteConversation(id);
+    const remaining = AIChatStorage.getConversations();
+    setConversations(remaining);
+    if (activeConversationId === id) {
+      if (remaining.length > 0) {
+        setActiveConversationId(remaining[0].id);
+        setMode(remaining[0].mode);
+      } else {
+        handleNewChat();
+      }
+    }
+  };
+
+  // 6. Clear All Conversations
+  const handleClearAll = () => {
+    AIChatStorage.clearAll();
+    const newConv = AIChatStorage.createNewConversation(undefined, mode);
+    setConversations([newConv]);
+    setActiveConversationId(newConv.id);
+  };
+
+  // 7. Change Mode
+  const handleSelectMode = (newMode: AIAssistantMode) => {
+    if (newMode === mode) return;
+    setMode(newMode);
+
+    // If current conversation has messages in different mode, start a fresh session in the selected mode
+    if (activeConversation && activeConversation.messages.length > 0 && activeConversation.mode !== newMode) {
+      handleNewChat(newMode);
+    } else if (activeConversation) {
+      // Update active conversation's mode
+      activeConversation.mode = newMode;
+      AIChatStorage.saveConversations(conversations);
+      setConversations([...conversations]);
+    }
+  };
+
+  // 8. Send Message
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputMessage).trim();
     if (!text || isLoading) return;
@@ -197,6 +188,7 @@ function AICenterContent() {
     setIsLoading(true);
 
     try {
+      // Extract latest conversation history (up to 12 turns)
       const currentConv = AIChatStorage.getConversations().find((c) => c.id === convId);
       const history = (currentConv?.messages || []).map((m) => ({
         role: m.role,
@@ -253,148 +245,169 @@ function AICenterContent() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] relative select-none">
-      
-      {/* Top Header matching Image 2 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0B132B] tracking-tight">
-            AI Center
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Your AI-powered security assistant
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Gemini Connected Status Badge matching Image 2 */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Gemini Connected</span>
-          </div>
-
-          {/* Mode Switcher */}
-          <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-medium">
-            <button
-              type="button"
-              onClick={() => setMode("cybersecurity")}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                mode === "cybersecurity"
-                  ? "bg-white text-[#0B132B] shadow-sm font-semibold"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Cybersecurity
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("general")}
-              className={`px-3 py-1 rounded-lg transition-all ${
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-[#070b12] text-slate-100 overflow-hidden select-none">
+      {/* Top Banner & Mode Header */}
+      <div className="px-4 py-2.5 border-b border-white/[0.08] bg-[#090d16] shrink-0">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div
+              className={`p-2 rounded-xl border ${
                 mode === "general"
-                  ? "bg-white text-[#0B132B] shadow-sm font-semibold"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "bg-violet-500/20 text-violet-300 border-violet-500/40 shadow-sm shadow-violet-950/50"
+                  : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm shadow-cyan-950/50"
               }`}
             >
-              General AI
-            </button>
+              {mode === "general" ? (
+                <Sparkles className="w-5 h-5 text-violet-400" />
+              ) : (
+                <Shield className="w-5 h-5 text-cyan-400" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm md:text-base font-extrabold text-white tracking-wide font-mono">
+                  CYBER<span className="text-cyan-400">GUARD</span> AI Center
+                </h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase bg-white/[0.06] text-slate-300 border border-white/[0.08]">
+                  Dual Assistant
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {mode === "general"
+                  ? "General-purpose conversational AI for coding, writing, reasoning, and problem-solving"
+                  : "Specialized SOC analyst grounded in live CYBERGUARD threat telemetry and response playbooks"}
+              </p>
+            </div>
           </div>
 
-          {/* New Chat Button */}
-          <button
-            type="button"
-            onClick={() => handleNewChat()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-[#0B132B] transition-colors shadow-sm"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#6366F1]" />
-            <span>New Thread</span>
-          </button>
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-2 self-end md:self-auto">
+            {mode === "cybersecurity" && (
+              <button
+                type="button"
+                onClick={() => setShowTelemetryDrawer(!showTelemetryDrawer)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${
+                  showTelemetryDrawer
+                    ? "bg-cyan-500/20 text-cyan-200 border-cyan-500/40"
+                    : "bg-white/[0.04] text-slate-400 border-white/[0.08] hover:text-white"
+                }`}
+                title="Toggle SOC telemetry panel"
+              >
+                {showTelemetryDrawer ? (
+                  <PanelRightClose className="w-4 h-4 text-cyan-400" />
+                ) : (
+                  <PanelRightOpen className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">Telemetry</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => handleNewChat()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-medium text-slate-200 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Thread</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex pt-6 pb-28 min-h-[500px]">
-        <div className="flex-1 flex flex-col max-w-5xl mx-auto w-full">
-          
-          {/* EMPTY STATE matching Image 2 */}
-          {messages.length === 0 ? (
-            <div className="flex-1 flex flex-col justify-center space-y-10 py-6 animate-in fade-in duration-300">
-              
-              {/* Editorial Hero Visual Banner matching Image 2 */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-white/70 backdrop-blur-md rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-                <div className="md:col-span-8 space-y-4">
-                  <h2 className="font-editorial-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[#0B132B] tracking-tight leading-[1.12]">
-                    Intelligence that<br />
-                    sees the bigger picture.
-                  </h2>
-                  <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal max-w-lg">
-                    Connect security signals. Understand the attack.<br />
-                    Decide your next move.
-                  </p>
-                </div>
+      {/* Main Workspace Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sessions Sidebar */}
+        <ChatSidebar
+          conversations={conversations}
+          activeId={activeConversationId}
+          currentMode={mode}
+          onSelect={handleSelectConversation}
+          onNewChat={() => handleNewChat()}
+          onDelete={handleDeleteConversation}
+          onClearAll={handleClearAll}
+          providerStatus={providerStatus}
+        />
 
-                <div className="md:col-span-4 flex justify-center md:justify-end">
-                  <img
-                    src="/ai-crystal-clean.png"
-                    alt="AI Intelligence Core"
-                    className="w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-lg select-none"
-                    loading="eager"
-                  />
-                </div>
-              </div>
-
-              {/* 4 Starter Prompts matching Image 2 */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {STARTER_PROMPTS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleSendMessage(item.prompt)}
-                      className="group p-5 rounded-2xl bg-white border border-slate-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-[#6366F1]/50 text-left transition-all duration-200 flex flex-col justify-between space-y-4"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100/80 text-[#6366F1] flex items-center justify-center group-hover:scale-105 transition-transform">
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-[#0B132B] group-hover:text-[#6366F1] transition-colors leading-snug">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
+        {/* Central Chat Workspace */}
+        <main className="flex-1 flex flex-col bg-[#070b12] overflow-hidden min-w-0">
+          {/* Mode Selector Header Bar */}
+          <div className="p-3 border-b border-white/[0.06] bg-[#090d16]/60">
+            <div className="max-w-4xl mx-auto">
+              <ModeSelector
+                currentMode={mode}
+                onSelectMode={handleSelectMode}
+                providerStatus={providerStatus}
+              />
             </div>
-          ) : (
-            /* CONVERSATION MESSAGE LIST */
-            <div className="space-y-4 pb-8">
-              {messages.map((msg, index) => (
-                <ChatMessageItem
-                  key={msg.id || index}
-                  message={msg}
-                  onRetry={() => {
-                    const userMsg = messages
-                      .filter((m) => m.role === "user")
-                      .slice(-1)[0]?.content;
-                    if (userMsg) handleSendMessage(userMsg);
-                  }}
-                  onOpenReport={(incId) =>
-                    setActiveReportIncidentId(
-                      incId || msg.associatedIncidentId || incidents[0]?.id || "INC-001"
-                    )
-                  }
-                  onSelectPrompt={(p) => handleSendMessage(p)}
-                />
-              ))}
+          </div>
 
+          {/* Messages Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+            <div className="max-w-4xl mx-auto space-y-4">
+              {messages.length === 0 ? (
+                <div className="py-8 md:py-12 space-y-8 animate-in fade-in duration-300">
+                  <div className="text-center space-y-3">
+                    <div
+                      className={`w-14 h-14 rounded-2xl mx-auto flex items-center justify-center border shadow-xl ${
+                        mode === "general"
+                          ? "bg-violet-950/40 border-violet-500/40 text-violet-300 shadow-violet-950/50"
+                          : "bg-cyan-950/40 border-cyan-500/40 text-cyan-300 shadow-cyan-950/50"
+                      }`}
+                    >
+                      {mode === "general" ? (
+                        <Sparkles className="w-7 h-7 text-violet-400" />
+                      ) : (
+                        <Shield className="w-7 h-7 text-cyan-400" />
+                      )}
+                    </div>
+                    <h2 className="text-lg md:text-xl font-extrabold text-white font-mono">
+                      {mode === "general"
+                        ? "How can General AI assist you today?"
+                        : "CYBERGUARD Security Operations Copilot"}
+                    </h2>
+                    <p className="text-xs md:text-sm text-slate-400 max-w-lg mx-auto">
+                      {mode === "general"
+                        ? "Ask about coding, algorithms, technical documentation, writing, or open-ended reasoning powered by Google Gemini."
+                        : "Inspect verified platform incidents, audit authentication logs, verify suspicious links, and compile incident dossiers."}
+                    </p>
+                  </div>
+
+                  {/* Contextual Prompt Suggestions */}
+                  <div className="space-y-2">
+                    <div className="text-center text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
+                      Suggested Starting Prompts
+                    </div>
+                    <PromptSuggestions
+                      mode={mode}
+                      onSelectPrompt={(p) => handleSendMessage(p)}
+                    />
+                  </div>
+                </div>
+              ) : (
+                messages.map((msg, index) => (
+                  <ChatMessageItem
+                    key={msg.id || index}
+                    message={msg}
+                    onRetry={() => {
+                      const userMsg = messages
+                        .filter((m) => m.role === "user")
+                        .slice(-1)[0]?.content;
+                      if (userMsg) handleSendMessage(userMsg);
+                    }}
+                    onOpenReport={(incId) =>
+                      setActiveReportIncidentId(
+                        incId || msg.associatedIncidentId || incidents[0]?.id || "INC-001"
+                      )
+                    }
+                    onSelectPrompt={(p) => handleSendMessage(p)}
+                  />
+                ))
+              )}
+
+              {/* Loading Indicator */}
               {isLoading && (
-                <div className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-slate-200 text-xs font-medium text-[#6366F1] shadow-sm animate-pulse">
-                  <Loader2 className="w-4 h-4 animate-spin text-[#6366F1]" />
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-black/40 border border-white/[0.08] text-xs font-mono text-cyan-300 animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
                   <span>
                     {mode === "general"
                       ? "Generating response with Google Gemini..."
@@ -405,103 +418,79 @@ function AICenterContent() {
 
               <div ref={messagesEndRef} />
             </div>
-          )}
-
-        </div>
-
-        {/* Optional Right Telemetry Drawer for Cybersecurity Mode */}
-        {mode === "cybersecurity" && showTelemetryDrawer && (
-          <div className="hidden xl:block w-80 ml-6 shrink-0">
-            <IntelligenceSidebar
-              incidents={incidents}
-              posture={posture}
-              responseMetrics={responseMetrics}
-              onSelectIncident={(incId) => {
-                handleSendMessage(`Investigate incident ${incId} and correlate all evidence.`);
-              }}
-            />
           </div>
+
+          {/* Message Input Bar */}
+          <div className="p-3.5 border-t border-white/[0.08] bg-[#090d16]/90 shrink-0">
+            <div className="max-w-4xl mx-auto space-y-2">
+              <div className="relative flex items-end gap-2 bg-[#0d121f] border border-white/[0.12] rounded-2xl p-2.5 focus-within:border-cyan-500/60 focus-within:shadow-lg focus-within:shadow-cyan-950/30 transition-all">
+                <textarea
+                  ref={textareaRef}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    mode === "general"
+                      ? "Ask CYBERGUARD General AI anything (e.g. 'Explain OAuth PKCE flow', 'Debug TypeScript error', 'Summarize architecture')..."
+                      : "Ask Cybersecurity Intelligence (e.g. 'Investigate INC-001', 'Summarize security posture', 'Explain ATO alert')..."
+                  }
+                  rows={1}
+                  className="w-full bg-transparent resize-none text-xs text-white placeholder-slate-500 focus:outline-none min-h-[44px] max-h-36 py-2 px-1 leading-relaxed"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => handleSendMessage()}
+                  disabled={isLoading || !inputMessage.trim()}
+                  className={`p-2.5 rounded-xl transition-all shrink-0 font-medium ${
+                    inputMessage.trim() && !isLoading
+                      ? mode === "general"
+                        ? "bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-600/40"
+                        : "bg-cyan-500 hover:bg-cyan-400 text-black shadow-md shadow-cyan-500/40"
+                      : "bg-white/[0.06] text-slate-500 cursor-not-allowed"
+                  }`}
+                  title="Send message (Enter)"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 font-mono">
+                <span className="hidden sm:inline">
+                  Press <kbd className="px-1.5 py-0.5 rounded bg-black/60 text-slate-400 border border-white/10 text-[10px]">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-black/60 text-slate-400 border border-white/10 text-[10px]">Shift+Enter</kbd> for newline
+                </span>
+                <span className="text-[10px] text-slate-500">
+                  AI may produce inaccurate output. Verify critical security actions.
+                </span>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* Right Live Telemetry Drawer (for Cybersecurity Mode) */}
+        {mode === "cybersecurity" && showTelemetryDrawer && (
+          <IntelligenceSidebar
+            incidents={incidents}
+            posture={posture}
+            responseMetrics={responseMetrics}
+            onSelectIncident={(incId) => {
+              handleSendMessage(`Investigate incident ${incId} and correlate all evidence.`);
+            }}
+          />
         )}
       </div>
 
-      {/* Floating Bottom Composer matching Image 2 */}
-      <div className="fixed bottom-0 left-0 lg:left-64 right-0 p-4 sm:p-6 bg-gradient-to-t from-[#F8F9FC] via-[#F8F9FC]/95 to-transparent z-20">
-        <div className="max-w-4xl mx-auto space-y-2">
-          <div className="relative flex items-center bg-white border border-slate-300/80 rounded-2xl sm:rounded-full px-4 py-2.5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] focus-within:border-[#6366F1] focus-within:ring-2 focus-within:ring-[#6366F1]/20 transition-all">
-            
-            {/* Attachment Icons */}
-            <div className="flex items-center gap-1.5 text-slate-400 mr-2 shrink-0">
-              <button
-                type="button"
-                className="p-1.5 rounded-full hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                title="Attach log or file"
-              >
-                <Paperclip className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                className="p-1.5 rounded-full hover:bg-slate-100 hover:text-slate-700 transition-colors"
-                title="Attach screenshot or media"
-              >
-                <ImageIcon className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Input Textarea */}
-            <textarea
-              ref={textareaRef}
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything about your security events, threats, or analysis..."
-              rows={1}
-              className="w-full bg-transparent resize-none text-xs sm:text-sm text-[#0B132B] placeholder:text-slate-400 focus:outline-none py-1.5 px-1 leading-normal"
-            />
-
-            {/* Circular Purple Send Button matching Image 2 */}
-            <button
-              type="button"
-              onClick={() => handleSendMessage()}
-              disabled={isLoading || !inputMessage.trim()}
-              className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all shadow-md ${
-                inputMessage.trim() && !isLoading
-                  ? "bg-[#6366F1] hover:bg-[#4F46E5] text-white shadow-indigo-500/30 cursor-pointer hover:scale-105 active:scale-95"
-                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
-              }`}
-              title="Send message"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ArrowRight className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-center text-[11px] text-slate-400 gap-2 font-mono">
-            <span>Shift + Enter for new line</span>
-            <span>•</span>
-            <span>Enter to send</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Incident Report Modal */}
+      {/* Structured Incident Report Dossier Modal */}
       {activeReportIncidentId && (
         <ReportModal
           incidentId={activeReportIncidentId}
           onClose={() => setActiveReportIncidentId(null)}
         />
       )}
-
     </div>
-  );
-}
-
-export default function AICenterPage() {
-  return (
-    <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-slate-500">Loading AI Center...</div>}>
-      <AICenterContent />
-    </React.Suspense>
   );
 }

@@ -4,23 +4,27 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
 import { MonitorSubnav } from "@/components/monitor/MonitorSubnav";
+import { AccountStatusBadge } from "@/components/monitor/AccountStatusBadge";
 import { DemoScenarioRunner } from "@/components/monitor/DemoScenarioRunner";
+import { AlertCard } from "@/components/monitor/AlertCard";
 import { EventTelemetryTable } from "@/components/monitor/EventTelemetryTable";
 import {
-  Search,
-  Filter,
   Shield,
+  Activity,
+  AlertTriangle,
+  Users,
+  Laptop,
+  Globe2,
   Clock,
   ArrowRight,
-  GitFork,
+  ShieldAlert,
+  ShieldCheck,
   Radio,
-  AlertTriangle,
-  User,
+  Flame,
   CheckCircle2,
-  Lock,
-  Layers,
-  ChevronRight,
-  ExternalLink,
+  AlertOctagon,
+  KeyRound,
+  LineChart,
 } from "lucide-react";
 import {
   AuthenticationEvent,
@@ -28,104 +32,15 @@ import {
   AccountSecurityPosture,
 } from "@/lib/security/monitor/types";
 
-interface TimelineEvent {
-  id: string;
-  title: string;
-  timeAgo: string;
-  timestamp: string;
-  severity: "High" | "Medium" | "Low";
-  source: string;
-  type: string;
-  status: string;
-  description: string;
-  chainNodes: string[];
-}
-
-const DEFAULT_TIMELINE_EVENTS: TimelineEvent[] = [
-  {
-    id: "evt-01",
-    title: "Phishing Email Detected",
-    timeAgo: "2 minutes ago",
-    timestamp: "Oct 26, 2025 14:30",
-    severity: "High",
-    source: "user@unknown.com",
-    type: "Phishing",
-    status: "Open",
-    description: "Email contains a malicious link that attempts to steal credentials and bypass MFA.",
-    chainNodes: ["Phishing Email", "Malicious URL", "Suspicious Login", "Potential Account Takeover"],
-  },
-  {
-    id: "evt-02",
-    title: "Suspicious login attempt",
-    timeAgo: "12 minutes ago",
-    timestamp: "Oct 26, 2025 14:18",
-    severity: "Medium",
-    source: "194.26.29.112 (VPN Gateway)",
-    type: "Authentication",
-    status: "Investigating",
-    description: "Anomalous geographic distance: login from Eastern Europe 15m after local office session.",
-    chainNodes: ["Suspicious Login", "Potential Account Takeover"],
-  },
-  {
-    id: "evt-03",
-    title: "Malicious URL Clicked",
-    timeAgo: "48 minutes ago",
-    timestamp: "Oct 26, 2025 13:42",
-    severity: "Medium",
-    source: "Workstation-SOC-04",
-    type: "Web Threat",
-    status: "Contained",
-    description: "Endpoint navigated to typo-squatted SSO phishing landing page auth-login-update.cc.",
-    chainNodes: ["Phishing Email", "Malicious URL"],
-  },
-  {
-    id: "evt-04",
-    title: "Deepfake Content Found",
-    timeAgo: "1 hour ago",
-    timestamp: "Oct 26, 2025 13:30",
-    severity: "High",
-    source: "Executive Voicemail Gateway",
-    type: "Synthetic Media",
-    status: "Open",
-    description: "22.05kHz acoustic sample pitch shift artifact detected in urgent executive wire request.",
-    chainNodes: ["Phishing Email", "Data Access", "Potential Account Takeover"],
-  },
-  {
-    id: "evt-05",
-    title: "Data Exfiltration Attempt",
-    timeAgo: "2 hours ago",
-    timestamp: "Oct 26, 2025 12:30",
-    severity: "High",
-    source: "Cloud Storage Bucket",
-    type: "Data Security",
-    status: "Blocked",
-    description: "Unusual mass egress attempt flagged by behavioral threshold guard.",
-    chainNodes: ["Suspicious Login", "Data Access", "Potential Account Takeover"],
-  },
-  {
-    id: "evt-06",
-    title: "Policy Violation",
-    timeAgo: "5 hours ago",
-    timestamp: "Oct 26, 2025 09:30",
-    severity: "Low",
-    source: "BYOD Device 89",
-    type: "Compliance",
-    status: "Resolved",
-    description: "Outdated browser version connected to internal staging dashboard.",
-    chainNodes: ["Suspicious Login"],
-  },
-];
-
 export default function MonitorOverviewPage() {
   const [posture, setPosture] = useState<AccountSecurityPosture | null>(null);
   const [alerts, setAlerts] = useState<MonitorAlert[]>([]);
   const [events, setEvents] = useState<AuthenticationEvent[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<TimelineEvent>(DEFAULT_TIMELINE_EVENTS[0]);
-  const [activeTab, setActiveTab] = useState<"attackChain" | "eventDetails" | "relatedEvents">("attackChain");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
     try {
+      setIsLoading(true);
       const res = await fetch("/api/monitor/events");
       const json = await res.json();
       if (json.success && json.data) {
@@ -135,6 +50,8 @@ export default function MonitorOverviewPage() {
       }
     } catch (err) {
       console.error("Failed to fetch monitor telemetry:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -142,318 +59,281 @@ export default function MonitorOverviewPage() {
     fetchData();
   }, []);
 
-  const filteredEvents = DEFAULT_TIMELINE_EVENTS.filter((evt) =>
-    evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    evt.source.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    evt.type.toLowerCase().includes(searchQuery.toLowerCase())
+  const activeAlerts = alerts.filter((a) => a.status === "ACTIVE");
+  const takeoverAlerts = activeAlerts.filter((a) => a.category === "ACCOUNT_TAKEOVER");
+  const failedLogins = events.filter((e) => !e.success);
+  const suspiciousSessions = activeAlerts.filter(
+    (a) => a.category === "SUSPICIOUS_SESSION" || a.category === "LOCATION_ANOMALY"
   );
 
   return (
     <AppShell>
-      <div className="space-y-6 pb-12 select-none">
-        
-        {/* Subnavigation */}
+      <div className="space-y-6 pb-12">
+        {/* Sub Navigation */}
         <MonitorSubnav />
 
-        {/* Header with Search & Filters matching Image 2 */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
-          <div>
-            <h1 className="text-2xl font-bold text-[#0B132B] tracking-tight">
-              Threat Monitor
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Track, analyze and investigate security threats.
-            </p>
-          </div>
+        {/* Hero & Account Security Posture Overview */}
+        <div className="relative overflow-hidden rounded-2xl glass-panel p-6 sm:p-8 border border-white/[0.1] shadow-xl">
+          <div
+            className={`absolute top-0 right-0 -mt-12 -mr-12 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-all ${
+              posture?.status === "COMPROMISED / POSSIBLE TAKEOVER"
+                ? "bg-rose-500/15"
+                : posture?.status === "HIGH RISK"
+                ? "bg-orange-500/15"
+                : posture?.status === "AT RISK"
+                ? "bg-amber-500/15"
+                : "bg-cyan-500/10"
+            }`}
+          />
 
-          <div className="flex items-center gap-3">
-            {/* Search Input */}
-            <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search events, IPs, domains..."
-                className="pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs text-[#0B132B] placeholder:text-slate-400 focus:outline-none focus:border-[#6366F1] shadow-sm w-64 md:w-72"
-              />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400">
+                  Continuous Account Surveillance
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Account Security & Abnormal Behavior
+              </h1>
+              <p className="text-sm text-slate-300 leading-relaxed font-normal">
+                Continuous telemetry correlation for failed logins, password spraying,
+                unusual locations, unknown devices, and account takeover indicators.
+              </p>
             </div>
 
-            {/* Filters Button */}
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-[#0B132B] hover:bg-slate-50 shadow-sm transition-colors"
-            >
-              <Filter className="w-3.5 h-3.5 text-slate-500" />
-              <span>Filters</span>
-            </button>
+            {/* Posture Status & Risk Badge */}
+            {posture && (
+              <div className="flex flex-col items-start lg:items-end gap-2.5">
+                <AccountStatusBadge status={posture.status} size="lg" />
+                <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
+                  <span>Risk Score:</span>
+                  <span
+                    className={`font-bold ${
+                      posture.riskScore >= 70
+                        ? "text-rose-400"
+                        : posture.riskScore >= 40
+                        ? "text-amber-400"
+                        : "text-emerald-400"
+                    }`}
+                  >
+                    {posture.riskScore} / 100 ({posture.riskLevel})
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 3-Column Threat Investigation Workspace matching Image 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          
-          {/* Column 1: Event Timeline matching Image 2 */}
-          <div className="lg:col-span-3 rounded-2xl p-5 bg-white border border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-4">
-            <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-xs font-bold text-[#0B132B] uppercase tracking-wider">
-                  Event Timeline
+        {/* Core Human Explainability Cards: "What is happening?" & "Do I need to take action?" */}
+        {posture && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Card 1: What is happening to my account? */}
+            <div
+              className={`rounded-2xl p-5 border transition-all ${
+                posture.takeoverSuspected
+                  ? "bg-gradient-to-br from-rose-950/30 via-slate-900/90 to-slate-900 border-rose-500/40 shadow-lg shadow-rose-950/30"
+                  : posture.riskScore >= 40
+                  ? "bg-gradient-to-br from-amber-950/20 via-slate-900/90 to-slate-900 border-amber-500/40"
+                  : "glass-panel border-white/[0.08]"
+              }`}
+            >
+              <div className="flex items-center gap-2 pb-2.5 border-b border-white/[0.06] mb-3">
+                <Radio className="w-4 h-4 text-cyan-400" />
+                <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold">
+                  What is happening to my account?
                 </h2>
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                  {filteredEvents.length} Events
-                </span>
               </div>
-
-              <div className="space-y-2.5 mt-3">
-                {filteredEvents.map((evt) => {
-                  const isSelected = selectedEvent.id === evt.id;
-                  return (
-                    <div
-                      key={evt.id}
-                      onClick={() => setSelectedEvent(evt)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-2 ${
-                        isSelected
-                          ? "bg-indigo-50/70 border-[#6366F1] shadow-sm"
-                          : "bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50"
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              evt.severity === "High"
-                                ? "bg-rose-500"
-                                : evt.severity === "Medium"
-                                ? "bg-amber-400"
-                                : "bg-emerald-500"
-                            }`}
-                          />
-                          <h3 className="text-xs font-bold text-[#0B132B] leading-snug">
-                            {evt.title}
-                          </h3>
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-mono">
-                          {evt.timeAgo} • <span className={`font-semibold ${
-                            evt.severity === "High" ? "text-rose-600" : evt.severity === "Medium" ? "text-amber-600" : "text-emerald-600"
-                          }`}>{evt.severity}</span>
-                        </div>
-                      </div>
-                      <ChevronRight className={`w-4 h-4 mt-1 transition-transform ${isSelected ? "text-[#6366F1] translate-x-0.5" : "text-slate-300"}`} />
-                    </div>
-                  );
-                })}
+              <p className="text-sm text-white font-medium leading-relaxed">
+                {posture.summary}
+              </p>
+              <div className="mt-3 text-xs text-slate-400 font-mono">
+                {activeAlerts.length > 0 ? (
+                  <span>
+                    Detected {activeAlerts.length} active security anomaly signal(s) in recent authentication traffic.
+                  </span>
+                ) : (
+                  <span>
+                    All recent access events match established behavioral profile and trusted hardware.
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-400 font-mono text-center">
-              ● Live Telemetry Ingestion Active
-            </div>
-          </div>
-
-          {/* Column 2: Attack Chain Graph Canvas matching Image 2 */}
-          <div className="lg:col-span-6 rounded-2xl bg-white border border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.02)] p-5 flex flex-col justify-between space-y-4">
-            
-            {/* Top Tabs */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-4 text-xs font-medium">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("attackChain")}
-                  className={`pb-1 border-b-2 transition-all ${
-                    activeTab === "attackChain"
-                      ? "border-[#6366F1] text-[#0B132B] font-bold"
-                      : "border-transparent text-slate-400 hover:text-slate-700"
-                  }`}
-                >
-                  Attack Chain
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("eventDetails")}
-                  className={`pb-1 border-b-2 transition-all ${
-                    activeTab === "eventDetails"
-                      ? "border-[#6366F1] text-[#0B132B] font-bold"
-                      : "border-transparent text-slate-400 hover:text-slate-700"
-                  }`}
-                >
-                  Event Details
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("relatedEvents")}
-                  className={`pb-1 border-b-2 transition-all ${
-                    activeTab === "relatedEvents"
-                      ? "border-[#6366F1] text-[#0B132B] font-bold"
-                      : "border-transparent text-slate-400 hover:text-slate-700"
-                  }`}
-                >
-                  Related Events
-                </button>
-              </div>
-
-              <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full font-semibold">
-                CORRELATED GRAPH
-              </span>
-            </div>
-
-            {/* Attack Chain Dark Node Canvas matching Image 2 */}
-            <div className="rounded-xl bg-[#0B0E17] border border-slate-800 p-6 relative overflow-hidden flex flex-col items-center justify-center min-h-[360px] text-white">
-              {/* Subtle ambient lighting */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-[#6366F1]/10 blur-3xl pointer-events-none" />
-
-              {/* Node Graph Layout matching Image 2 */}
-              <div className="relative z-10 w-full max-w-md flex flex-col items-center space-y-6">
-                
-                {/* Node 1: Root */}
-                <div className="p-3 px-5 rounded-full bg-rose-950/60 border border-rose-500/60 text-xs font-semibold text-rose-300 shadow-lg shadow-rose-950/40 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-                  <span>Phishing Email</span>
-                </div>
-
-                {/* Vertical Connector */}
-                <div className="w-[2px] h-6 bg-gradient-to-b from-rose-500/60 to-indigo-500/60" />
-
-                {/* Node 2 */}
-                <div className="p-3 px-6 rounded-full bg-[#171B2A] border border-indigo-500/60 text-xs font-semibold text-indigo-300 shadow-md flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                  <span>Malicious URL</span>
-                </div>
-
-                {/* Branch Connectors */}
-                <div className="w-full flex justify-around relative">
-                  <div className="w-[2px] h-6 bg-indigo-500/40" />
-                  <div className="w-[2px] h-6 bg-indigo-500/40" />
-                </div>
-
-                {/* Branch Nodes: Suspicious Login & Data Access */}
-                <div className="w-full flex items-center justify-around gap-4">
-                  <div className="p-2.5 px-4 rounded-xl bg-[#171B2A] border border-slate-700 text-xs font-medium text-slate-300 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    <span>Suspicious Login</span>
-                  </div>
-
-                  <div className="p-2.5 px-4 rounded-xl bg-[#171B2A] border border-slate-700 text-xs font-medium text-slate-300 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                    <span>Data Access</span>
-                  </div>
-                </div>
-
-                {/* Converging Connector */}
-                <div className="w-[2px] h-6 bg-rose-500/60" />
-
-                {/* Final Target Node: Potential Account Takeover */}
-                <div className="p-3 px-6 rounded-full bg-rose-950/80 border border-rose-500 text-xs font-bold text-rose-300 shadow-lg shadow-rose-950/50 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-rose-400" />
-                  <span>Potential Account Takeover</span>
-                </div>
-
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100 font-mono">
-              <span>Selected Attack Vector: {selectedEvent.type}</span>
-              <Link href="/attack-chains" className="text-[#6366F1] font-semibold hover:underline flex items-center gap-1">
-                <span>Open Full Kill Chain</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Column 3: Event Details matching Image 2 */}
-          <div className="lg:col-span-3 rounded-2xl p-5 bg-white border border-slate-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-4">
-            <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-xs font-bold text-[#0B132B] uppercase tracking-wider">
-                  Event Details
+            {/* Card 2: Do I need to take action? */}
+            <div
+              className={`rounded-2xl p-5 border transition-all ${
+                posture.takeoverSuspected
+                  ? "bg-gradient-to-br from-rose-950/30 via-slate-900/90 to-slate-900 border-rose-500/40 shadow-lg shadow-rose-950/30"
+                  : posture.riskScore >= 40
+                  ? "bg-gradient-to-br from-cyan-950/20 via-slate-900/90 to-slate-900 border-cyan-500/40"
+                  : "glass-panel border-white/[0.08]"
+              }`}
+            >
+              <div className="flex items-center gap-2 pb-2.5 border-b border-white/[0.06] mb-3">
+                <ShieldAlert className="w-4 h-4 text-cyan-400" />
+                <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300 font-bold">
+                  Do I need to take action?
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-rose-50 text-rose-600 border border-rose-200">
-                  {selectedEvent.severity}
-                </span>
               </div>
 
-              <div className="space-y-4 mt-4">
-                <div>
-                  <h3 className="text-sm font-bold text-[#0B132B]">
-                    {selectedEvent.title}
-                  </h3>
-                </div>
-
-                {/* Metadata Fields matching Image 2 */}
-                <div className="space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Time</span>
-                    <span className="text-[#0B132B] font-mono font-medium">{selectedEvent.timestamp}</span>
+              {posture.status === "SECURE" || posture.status === "MONITORED" ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-emerald-300 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>No immediate containment action required.</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Source</span>
-                    <span className="text-[#0B132B] font-mono truncate max-w-[150px]">{selectedEvent.source}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Type</span>
-                    <span className="text-[#0B132B] font-semibold">{selectedEvent.type}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Status</span>
-                    <span className="text-amber-600 font-semibold">{selectedEvent.status}</span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="pt-3 border-t border-slate-100 space-y-1">
-                  <span className="text-xs font-semibold text-slate-500 block">Description</span>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {selectedEvent.description}
+                  <p className="text-xs text-slate-400">
+                    System continues ambient baseline tracking across your trusted devices.
                   </p>
                 </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <Link
-                href="/incidents"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0B132B] text-xs font-semibold transition-colors shadow-sm"
-              >
-                <span>View Full Details</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2 text-sm text-rose-300 font-semibold">
+                    <AlertOctagon className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Defensive action recommended:</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {posture.recommendedResponse.map((rec, i) => (
+                      <li
+                        key={i}
+                        className="text-xs text-slate-200 flex items-start gap-2 font-mono"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0 mt-1.5" />
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="pt-2">
+                    <Link
+                      href="/monitor/account"
+                      className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
+                    >
+                      <span>Review Active Sessions & Revoke Access</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+        )}
 
-        </div>
-
-        {/* Decorative Violet Mountain / Horizon Wave matching Image 2 bottom */}
-        <div className="relative rounded-2xl overflow-hidden h-28 bg-gradient-to-r from-[#1E1B4B] via-[#4338CA] to-[#6366F1] shadow-lg flex items-center justify-between px-8 text-white">
-          <div className="space-y-1 relative z-10">
-            <span className="text-xs font-mono uppercase tracking-wider text-indigo-200">
-              Correlated Defensive Posture
+        {/* Operational Metrics Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="glass-panel rounded-xl p-4 border border-white/[0.08]">
+            <span className="text-[10px] font-mono uppercase text-slate-400 block">
+              Active Alerts
             </span>
-            <h3 className="text-base sm:text-lg font-bold">
-              Autonomous Attack Chain Intelligence
-            </h3>
-            <p className="text-xs text-indigo-100 max-w-xl">
-              Signals from identity, endpoints, and communications are unified to block campaigns before impact.
-            </p>
+            <div className="text-2xl font-bold font-mono text-white mt-1">
+              {activeAlerts.length}
+            </div>
+            <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+              {takeoverAlerts.length > 0 ? `${takeoverAlerts.length} critical ATO` : "No critical ATO"}
+            </span>
           </div>
 
-          <Link
-            href="/ai?session=threat"
-            className="hidden sm:inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-[#0B132B] text-xs font-semibold hover:bg-slate-100 transition-colors shadow-md shrink-0 relative z-10"
-          >
-            <span>Ask AI Copilot</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#6366F1]" />
-          </Link>
+          <div className="glass-panel rounded-xl p-4 border border-white/[0.08]">
+            <span className="text-[10px] font-mono uppercase text-slate-400 block">
+              Failed Logins
+            </span>
+            <div className="text-2xl font-bold font-mono text-orange-400 mt-1">
+              {failedLogins.length}
+            </div>
+            <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+              in trailing window
+            </span>
+          </div>
+
+          <div className="glass-panel rounded-xl p-4 border border-white/[0.08]">
+            <span className="text-[10px] font-mono uppercase text-slate-400 block">
+              Suspicious Sessions
+            </span>
+            <div className="text-2xl font-bold font-mono text-rose-400 mt-1">
+              {suspiciousSessions.length}
+            </div>
+            <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+              unusual geo / devices
+            </span>
+          </div>
+
+          <div className="glass-panel rounded-xl p-4 border border-white/[0.08]">
+            <span className="text-[10px] font-mono uppercase text-slate-400 block">
+              Recorded Events
+            </span>
+            <div className="text-2xl font-bold font-mono text-cyan-400 mt-1">
+              {events.length}
+            </div>
+            <span className="text-[10px] font-mono text-slate-500 mt-1 block">
+              live telemetry store
+            </span>
+          </div>
         </div>
 
-        {/* Retain Demo Scenario Runner & Event Telemetry Table for Full Preservation */}
-        <div className="space-y-6 pt-4">
-          <DemoScenarioRunner onScenarioExecuted={fetchData} onCleared={fetchData} />
-          <EventTelemetryTable events={events} />
+        {/* Demo Simulation Runner Ribbon */}
+        <DemoScenarioRunner
+          onScenarioExecuted={fetchData}
+          onCleared={fetchData}
+        />
+
+        {/* Active Security Alerts Feed */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-cyan-400" />
+              <h2 className="text-base font-bold text-white tracking-wide">
+                Active Security Alerts & Detections
+              </h2>
+            </div>
+            <span className="text-xs font-mono text-slate-400">
+              {activeAlerts.length} active
+            </span>
+          </div>
+
+          {activeAlerts.length === 0 ? (
+            <div className="rounded-2xl glass-panel p-8 text-center border border-white/[0.08] space-y-2">
+              <ShieldCheck className="w-10 h-10 text-emerald-400/80 mx-auto" />
+              <p className="text-sm font-semibold text-white">
+                No active security alerts
+              </p>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                No suspicious authentication behavior, password spraying, or account takeover indicators detected.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activeAlerts.map((alt) => (
+                <AlertCard
+                  key={alt.id}
+                  alert={alt}
+                  onAcknowledge={fetchData}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
+        {/* Recent Authentication Events Stream */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-cyan-400" />
+              <h2 className="text-base font-bold text-white tracking-wide">
+                Recent Authentication Telemetry
+              </h2>
+            </div>
+            <Link
+              href="/monitor/login"
+              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+            >
+              <span>View Full Log</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <EventTelemetryTable events={events} maxRows={8} />
+        </div>
       </div>
     </AppShell>
   );

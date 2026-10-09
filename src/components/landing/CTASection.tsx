@@ -1,59 +1,58 @@
-"use client";
-
 import React from "react";
-import Link from "next/link";
 import { ArrowRight, ShieldCheck, Lock } from "lucide-react";
-import { useAuth } from "@/lib/auth/auth-context";
+import { Button } from "@/components/ui/Button";
 
 export function CTASection() {
-  const { isAuthenticated } = useAuth();
-
   return (
-    <section className="py-28 lg:py-36 relative border-t border-slate-200/80 bg-[#FAF7F2] overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-8">
-        
+    <section className="py-20 lg:py-28 relative border-t border-white/[0.06] bg-[#05080f] overflow-hidden cyber-grid-lines">
+      {/* Background radial accent glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] ambient-glow-cyan blur-[130px] pointer-events-none opacity-20" />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
         {/* Shield Icon Badge */}
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-200/90 text-[#4F46E5] shadow-sm">
-          <ShieldCheck className="w-7 h-7 text-[#4F46E5]" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-6 shadow-lg shadow-cyan-950/40">
+          <ShieldCheck className="w-7 h-7" />
         </div>
 
-        {/* Closing Headline */}
-        <div className="space-y-4">
-          <h2 className="font-editorial-serif text-4xl sm:text-6xl font-medium text-[#0B132B] tracking-tight leading-[1.05]">
-            Make every signal count.
-          </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto font-normal">
-            Understand complex attack chains before they manifest. Connect isolated threats,
-            review explainable evidence, and respond with calibrated confidence.
-          </p>
-        </div>
+        {/* Headline */}
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight mb-5">
+          Your Next Security Decision Starts Here.
+        </h2>
 
-        {/* CTA Buttons matching Image 1 */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <Link
-            href={isAuthenticated ? "/dashboard" : "/login"}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#1E293B] text-white text-sm font-semibold tracking-wide shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+        {/* Supporting text */}
+        <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto mb-8 font-normal">
+          Analyze suspicious activity, understand the risk, and take the right
+          action before modern threats compromise your operations.
+        </p>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button
+            href="/signup"
+            size="lg"
+            variant="primary"
+            className="w-full sm:w-auto"
+            icon={<ArrowRight className="w-4 h-4" />}
           >
-            <span>Launch CYBERGUARD</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-
-          <Link
+            Get Started
+          </Button>
+          <Button
             href="/login"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full bg-white border border-slate-300 hover:bg-slate-50 text-[#0B132B] text-sm font-semibold transition-all"
+            size="lg"
+            variant="secondary"
+            className="w-full sm:w-auto"
+            icon={<Lock className="w-4 h-4 text-cyan-400" />}
           >
-            <Lock className="w-4 h-4 text-slate-500" />
-            <span>Sign In to Console</span>
-          </Link>
+            Sign In to Console
+          </Button>
         </div>
 
-        {/* Platform Footnote */}
-        <div className="pt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500">
-          <span>• Zero Hallucination SOC Engine</span>
-          <span>• Explainable Multi-Source Telemetry</span>
-          <span>• Governed Human-in-the-Loop Safeguards</span>
+        {/* Safe, non-invasive note */}
+        <div className="mt-8 flex items-center justify-center gap-6 text-xs font-mono text-slate-500">
+          <span>• Zero Agent Installation</span>
+          <span>• Privacy-First Architecture</span>
+          <span>• BPUT 2026 Initiative</span>
         </div>
-
       </div>
     </section>
   );
