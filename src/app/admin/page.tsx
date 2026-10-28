@@ -139,10 +139,13 @@ export default function AdminPage() {
   ];
 
   const handleElevateToAdmin = async () => {
-    await signIn({
+    const res = await signIn({
       email: "admin@cyberguard.security",
       password: "CyberGuard@Admin2026",
     });
+    if (res.success) {
+      window.location.reload();
+    }
   };
 
   return (

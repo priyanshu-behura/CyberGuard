@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
-import { AlertCircle, X, ShieldAlert, KeyRound, Copy, Check } from "lucide-react";
+import { KeyRound, Copy, Check, X, Sparkles, Loader2 } from "lucide-react";
 
 interface GoogleSignInButtonProps {
   className?: string;
@@ -10,15 +10,28 @@ interface GoogleSignInButtonProps {
 }
 
 export function GoogleSignInButton({ className = "", disabled = false }: GoogleSignInButtonProps) {
-  const { googleOAuthConfig } = useAuth();
+  const { googleOAuthConfig, signInWithGoogleDemo } = useAuth();
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   const handleClick = () => {
     if (googleOAuthConfig.isConfigured && googleOAuthConfig.authUrl) {
       window.location.href = googleOAuthConfig.authUrl;
     } else {
       setShowConfigModal(true);
+    }
+  };
+
+  const handleDemoSignIn = async () => {
+    setIsDemoLoading(true);
+    try {
+      const res = await signInWithGoogleDemo();
+      if (res.success) {
+        window.location.href = "/dashboard";
+      }
+    } finally {
+      setIsDemoLoading(false);
     }
   };
 
@@ -34,7 +47,7 @@ export function GoogleSignInButton({ className = "", disabled = false }: GoogleS
       <button
         type="button"
         onClick={handleClick}
-        disabled={disabled}
+        disabled={disabled || isDemoLoading}
         aria-label="Continue with Google"
         className={`w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-100 border border-white/[0.12] hover:border-cyan-500/40 text-sm font-medium transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-[#07090e] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
       >
@@ -60,26 +73,26 @@ export function GoogleSignInButton({ className = "", disabled = false }: GoogleS
         <span>Continue with Google</span>
       </button>
 
-      {/* Graceful Unconfigured State Modal */}
+      {/* Google OAuth Modal with One-Click Demo Mode Option */}
       {showConfigModal && (
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="oauth-dialog-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
         >
           <div className="glass-panel rounded-2xl max-w-lg w-full p-6 border border-cyan-500/30 shadow-2xl shadow-cyan-950/50 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 id="oauth-dialog-title" className="text-base font-bold text-white">
-                    Google OAuth Pending Setup
+                    Google Sign-In Options
                   </h3>
                   <p className="text-xs text-slate-400 font-mono">
-                    Environment Configuration Required
+                    Instant Demo or Production Setup
                   </p>
                 </div>
               </div>
@@ -93,13 +106,36 @@ export function GoogleSignInButton({ className = "", disabled = false }: GoogleS
               </button>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Google OAuth integration is structurally ready in CYBERGUARD. The project owner has not yet configured the Google OAuth credentials in <code className="text-cyan-300 font-mono bg-slate-900 px-1 py-0.5 rounded">.env.local</code>.
-            </p>
+            {/* Instant Demo Google Sign In */}
+            <div className="p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-2.5">
+              <div className="flex items-center gap-2 text-cyan-300 font-semibold text-xs">
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <span>Instant Demo Google Account</span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Sign in immediately with a pre-configured Google Analyst identity without needing external Google Cloud Console credentials.
+              </p>
+              <button
+                type="button"
+                onClick={handleDemoSignIn}
+                disabled={isDemoLoading}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:brightness-110 text-slate-950 font-bold text-xs shadow-md shadow-cyan-950/40 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isDemoLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <span>Sign In as Demo Google Analyst</span>
+                )}
+              </button>
+            </div>
 
-            <div className="bg-slate-950/80 rounded-xl p-3 border border-white/[0.08] text-xs font-mono space-y-2">
+            {/* Production Setup Instructions */}
+            <div className="bg-slate-950/80 rounded-xl p-3.5 border border-white/[0.08] text-xs font-mono space-y-2">
               <div className="flex items-center justify-between text-slate-400 pb-1 border-b border-white/[0.06]">
-                <span>Required in .env.local:</span>
+                <span className="text-[11px] uppercase text-slate-400">Production OAuth Setup (.env.local):</span>
                 <button
                   type="button"
                   onClick={copyEnvSnippet}
@@ -114,18 +150,15 @@ export function GoogleSignInButton({ className = "", disabled = false }: GoogleS
                 <div>GOOGLE_CLIENT_SECRET=&lt;client_secret&gt;</div>
                 <div>NEXT_PUBLIC_APP_URL=http://localhost:3000</div>
               </div>
-              <div className="text-slate-400 text-[10px] pt-1 border-t border-white/[0.06]">
-                Callback URI: <span className="text-cyan-300">{googleOAuthConfig.redirectUri}</span>
-              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => setShowConfigModal(false)}
-                className="px-4 py-2 text-xs font-medium rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-medium rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 transition-colors cursor-pointer"
               >
-                Understood
+                Close
               </button>
             </div>
           </div>

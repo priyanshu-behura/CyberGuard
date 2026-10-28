@@ -98,7 +98,7 @@ export class CyberGuardAIProvider {
         } catch (err: any) {
           console.warn("Gemini General AI execution error:", err?.message || err);
           return {
-            content: `> [!WARNING]\n> **AI Service Notice**: ${err?.message || "Gemini model request failed."}\n\nPlease check your network connection or verify that \`GEMINI_API_KEY\` in \`.env.local\` is valid.`,
+            content: `> [!WARNING]\n> **AI Service Notice**: ${err?.message || "AI request failed."}\n\nPlease check your network connection or verify that \`GEMINI_API_KEY\` in \`.env.local\` is valid.`,
             executionMode: "DEMO_FALLBACK",
             modelIdentifier: GEMINI_PRIMARY_MODEL,
             toolInvocations: [],
@@ -110,15 +110,15 @@ export class CyberGuardAIProvider {
 
       // If Gemini is not configured, give clear guidance for General AI mode
       return {
-        content: `### 🌐 General AI Assistant (Configuration Required)
+        content: `### 🌐 CYBERGUARD General AI (Configuration Required)
 
-The **General AI Assistant** is powered by **Google Gemini** for open-ended conversation, programming help, writing, and problem-solving.
+The **General AI Assistant** provides open-ended conversational intelligence, programming assistance, writing, reasoning, and problem-solving.
 
-To activate Gemini:
-1. Obtain an API key from [Google AI Studio](https://aistudio.google.com/).
+To activate cloud generative capabilities:
+1. Ensure your server environment API key is configured.
 2. Add your key to \`.env.local\` in the project root:
 \`\`\`env
-GEMINI_API_KEY=your_actual_gemini_api_key
+GEMINI_API_KEY=your_actual_api_key
 \`\`\`
 3. Restart the CYBERGUARD dev server.
 
@@ -129,7 +129,7 @@ GEMINI_API_KEY=your_actual_gemini_api_key
         toolInvocations: [],
         suggestedFollowUps: [
           "Switch to Cybersecurity Intelligence mode",
-          "How do I set up my Gemini API key?",
+          "Summarize current security posture",
         ],
         evidenceSnippets: [],
       };

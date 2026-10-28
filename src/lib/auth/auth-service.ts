@@ -11,16 +11,94 @@ import {
   AUTH_STORAGE_KEY,
 } from "./constants";
 
+const USERS_STORAGE_KEY = "cyberguard_registered_users";
+
+interface StoredAccount {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: "admin" | "analyst" | "viewer";
+  authProvider: "email" | "google";
+  createdAt: string;
+}
+
 /**
  * CYBERGUARD Authentication Service
  * 
- * Clean abstraction layer separating authentication logic from the UI.
- * In Phase 2:
- *  - Manages session state, cookie synchronization, and form validations.
- *  - Supports future OAuth Google credentials via environment variables without hardcoded secrets.
- *  - Pluggable for future NextAuth, Supabase, Firebase, or enterprise backend API.
+ * Manages user accounts, session state, cookie synchronization,
+ * and form validation.
  */
 class AuthService {
+  private defaultAccounts: StoredAccount[] = [
+    {
+      id: "usr_admin_master",
+      name: "System Administrator",
+      email: "admin@cyberguard.security",
+      passwordHash: "CyberGuard@Admin2026",
+      role: "admin",
+      authProvider: "email",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "usr_analyst_01",
+      name: "Alex Mercer (Lead Analyst)",
+      email: "analyst@cyberguard.security",
+      passwordHash: "Analyst@2026",
+      role: "analyst",
+      authProvider: "email",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  /**
+   * Returns list of registered accounts (pre-seeded + created in browser)
+   */
+  public getRegisteredAccounts(): StoredAccount[] {
+    if (typeof window === "undefined") return this.defaultAccounts;
+
+    try {
+      const stored = localStorage.getItem(USERS_STORAGE_KEY);
+      if (!stored) {
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(this.defaultAccounts));
+        return this.defaultAccounts;
+      }
+      const parsed: StoredAccount[] = JSON.parse(stored);
+      // Ensure defaults exist
+      const accounts = [...parsed];
+      for (const def of this.defaultAccounts) {
+        if (!accounts.some((a) => a.email.toLowerCase() === def.email.toLowerCase())) {
+          accounts.push(def);
+        }
+      }
+      return accounts;
+    } catch {
+      return this.defaultAccounts;
+    }
+  }
+
+  /**
+   * Saves a newly registered account
+   */
+  private saveAccount(account: StoredAccount): void {
+    if (typeof window === "undefined") return;
+
+    try {
+      const accounts = this.getRegisteredAccounts();
+      const existingIdx = accounts.findIndex(
+        (a) => a.email.toLowerCase() === account.email.toLowerCase()
+      );
+      if (existingIdx >= 0) {
+        accounts[existingIdx] = account;
+      } else {
+        accounts.push(account);
+      }
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(accounts));
+    } catch (e) {
+      console.error("Failed to save registered account to localStorage:", e);
+    }
+  }
+
   /**
    * Evaluates Google OAuth configuration based on environment variables.
    * Never hardcodes client IDs or secrets.
@@ -68,7 +146,7 @@ class AuthService {
 
   /**
    * Signs in with Email and Password.
-   * Performs validation and generates a secure session.
+   * Validates against registered/demo accounts or provisions dynamically.
    */
   public async signInWithEmail(credentials: SignInInput): Promise<AuthResponse> {
     const { email, password } = credentials;
@@ -82,18 +160,25 @@ class AuthService {
       };
     }
 
-    const normalizedInput = email.trim().toLowerCase();
-    const isAdminLogin =
-      normalizedInput === "admin" ||
-      normalizedInput === "admin@cyberguard.security" ||
-      normalizedInput.startsWith("admin@");
+    const rawInput = email.trim().toLowerCase();
+    
+    // Normalize aliases
+    let normalizedEmail = rawInput;
+    let isAdminLogin = false;
 
-    // Validation: Valid email structure (or 'admin' system identifier)
-    if (normalizedInput !== "admin" && !this.isValidEmail(normalizedInput)) {
+    if (rawInput === "admin" || rawInput === "admin@cyberguard.security" || rawInput.startsWith("admin@")) {
+      normalizedEmail = "admin@cyberguard.security";
+      isAdminLogin = true;
+    } else if (rawInput === "analyst" || rawInput === "analyst@cyberguard.security") {
+      normalizedEmail = "analyst@cyberguard.security";
+    }
+
+    // Validation: Valid email format (if not alias)
+    if (!this.isValidEmail(normalizedEmail)) {
       return {
         success: false,
         errorCode: "INVALID_CREDENTIALS",
-        message: "Please enter a valid cybersecurity identity / email address.",
+        message: "Please enter a valid cybersecurity identity or email address.",
       };
     }
 
@@ -102,25 +187,73 @@ class AuthService {
       return {
         success: false,
         errorCode: "INVALID_CREDENTIALS",
-        message: "Invalid credentials. Password must be at least 6 characters.",
+        message: "Invalid credentials. Passwords must be at least 6 characters.",
       };
     }
 
     // Emulate realistic cryptographic verification latency
-    await this.delay(400);
+    await this.delay(300);
 
-    const userEmail =
-      normalizedInput === "admin" ? "admin@cyberguard.security" : normalizedInput;
+    // Look up registered accounts
+    const accounts = this.getRegisteredAccounts();
+    const existingAccount = accounts.find(
+      (a) => a.email.toLowerCase() === normalizedEmail.toLowerCase()
+    );
 
-    // Create session entity with admin role when logging in as administrator
-    const user: User = {
-      id: isAdminLogin ? "usr_admin_master" : `usr_${this.generateRandomString(12)}`,
-      email: userEmail,
-      name: isAdminLogin ? "System Administrator" : this.extractNameFromEmail(userEmail),
-      role: isAdminLogin ? "admin" : "analyst",
-      authProvider: "email",
-      createdAt: new Date().toISOString(),
-    };
+    let user: User;
+
+    if (existingAccount) {
+      // Validate password for known accounts
+      // Admin accepts either the primary pass or admin123; Analyst accepts Analyst@2026 or analyst123
+      const isKnownAdmin = normalizedEmail === "admin@cyberguard.security";
+      const isKnownAnalyst = normalizedEmail === "analyst@cyberguard.security";
+
+      let passwordValid = existingAccount.passwordHash === password;
+      if (isKnownAdmin && (password === "CyberGuard@Admin2026" || password === "admin123" || password === "admin")) {
+        passwordValid = true;
+      }
+      if (isKnownAnalyst && (password === "Analyst@2026" || password === "analyst123" || password === "analyst")) {
+        passwordValid = true;
+      }
+
+      if (!passwordValid) {
+        return {
+          success: false,
+          errorCode: "INVALID_CREDENTIALS",
+          message: "Incorrect password for this account. Please verify your credentials.",
+        };
+      }
+
+      user = {
+        id: existingAccount.id,
+        email: existingAccount.email,
+        name: existingAccount.name,
+        role: existingAccount.role,
+        authProvider: existingAccount.authProvider || "email",
+        createdAt: existingAccount.createdAt,
+      };
+    } else {
+      // For any new email entered during demo/eval, auto-provision and save account
+      const newAccount: StoredAccount = {
+        id: isAdminLogin ? "usr_admin_master" : `usr_${this.generateRandomString(12)}`,
+        name: isAdminLogin ? "System Administrator" : this.extractNameFromEmail(normalizedEmail),
+        email: normalizedEmail,
+        passwordHash: password,
+        role: isAdminLogin ? "admin" : "analyst",
+        authProvider: "email",
+        createdAt: new Date().toISOString(),
+      };
+      this.saveAccount(newAccount);
+
+      user = {
+        id: newAccount.id,
+        email: newAccount.email,
+        name: newAccount.name,
+        role: newAccount.role,
+        authProvider: "email",
+        createdAt: newAccount.createdAt,
+      };
+    }
 
     const session: Session = {
       token: `cgs_${this.generateRandomString(48)}`,
@@ -140,7 +273,7 @@ class AuthService {
   }
 
   /**
-   * Registers a new account with validation.
+   * Registers a new account with validation and saves it to the account store.
    */
   public async signUpWithEmail(input: SignUpInput): Promise<AuthResponse> {
     const { name, email, password, confirmPassword } = input;
@@ -155,7 +288,8 @@ class AuthService {
     }
 
     // Validation: Email format
-    if (!this.isValidEmail(email.trim())) {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!this.isValidEmail(normalizedEmail)) {
       return {
         success: false,
         errorCode: "INVALID_CREDENTIALS",
@@ -182,15 +316,41 @@ class AuthService {
     }
 
     // Emulate account provisioning latency
-    await this.delay(500);
+    await this.delay(400);
 
-    const user: User = {
+    // Check if account already exists
+    const accounts = this.getRegisteredAccounts();
+    const existing = accounts.find(
+      (a) => a.email.toLowerCase() === normalizedEmail
+    );
+
+    if (existing && existing.passwordHash !== password) {
+      return {
+        success: false,
+        errorCode: "USER_EXISTS",
+        message: "An account with this email address already exists. Please sign in instead.",
+      };
+    }
+
+    const newAccount: StoredAccount = {
       id: `usr_${this.generateRandomString(12)}`,
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       name: name.trim(),
+      passwordHash: password,
       role: "analyst",
       authProvider: "email",
       createdAt: new Date().toISOString(),
+    };
+
+    this.saveAccount(newAccount);
+
+    const user: User = {
+      id: newAccount.id,
+      email: newAccount.email,
+      name: newAccount.name,
+      role: newAccount.role,
+      authProvider: "email",
+      createdAt: newAccount.createdAt,
     };
 
     const session: Session = {
@@ -210,6 +370,37 @@ class AuthService {
   }
 
   /**
+   * One-click demo sign-in with Google OAuth emulation.
+   */
+  public async signInWithGoogleDemo(): Promise<AuthResponse> {
+    await this.delay(350);
+
+    const user: User = {
+      id: `usr_g_${this.generateRandomString(12)}`,
+      email: "analyst@cyberguard.internal",
+      name: "Security Analyst (Google OAuth)",
+      role: "analyst",
+      authProvider: "google",
+      createdAt: new Date().toISOString(),
+    };
+
+    const session: Session = {
+      token: `cgs_oauth_${this.generateRandomString(48)}`,
+      user,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    await this.saveSession(session);
+
+    return {
+      success: true,
+      user,
+      session,
+      message: "Google authentication completed successfully.",
+    };
+  }
+
+  /**
    * Simulates OAuth callback exchange after user redirects back from Google.
    */
   public async handleOAuthCallback(
@@ -224,9 +415,8 @@ class AuthService {
       };
     }
 
-    await this.delay(600);
+    await this.delay(500);
 
-    // In a full production deployment with backend, the server exchanges the code with Google's token endpoint
     const user: User = {
       id: `usr_g_${this.generateRandomString(12)}`,
       email: "analyst@cyberguard.internal",
@@ -276,7 +466,7 @@ class AuthService {
       };
     }
 
-    await this.delay(400);
+    await this.delay(300);
 
     return {
       success: true,
@@ -307,6 +497,30 @@ class AuthService {
       } catch (err) {
         console.warn("Session deletion request failed (fallback cookie cleared)", err);
       }
+    }
+  }
+
+  /**
+   * Ensures the session cookie is synchronized to document.cookie and server route
+   */
+  public syncCookie(session: Session): void {
+    if (typeof window === "undefined" || !session?.token) return;
+
+    try {
+      const expires = new Date(session.expiresAt).toUTCString();
+      document.cookie = `${AUTH_COOKIE_NAME}=${encodeURIComponent(
+        session.token
+      )}; path=/; expires=${expires}; SameSite=Lax`;
+
+      fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session }),
+      }).catch(() => {
+        // Ignore background sync errors
+      });
+    } catch (e) {
+      console.warn("Cookie sync error:", e);
     }
   }
 

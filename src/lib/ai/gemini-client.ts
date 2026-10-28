@@ -86,7 +86,7 @@ export function getGeminiProviderStatus(): AIProviderStatus {
       providerType: "gemini",
       modelName: GEMINI_PRIMARY_MODEL,
       hasGeminiKey: true,
-      activeModeLabel: `Google Gemini Cloud AI (${GEMINI_PRIMARY_MODEL})`,
+      activeModeLabel: "CYBERGUARD Cloud AI",
     };
   }
 
@@ -97,7 +97,7 @@ export function getGeminiProviderStatus(): AIProviderStatus {
     hasGeminiKey: false,
     activeModeLabel: "Deterministic Security Engine (Offline / Key Unconfigured)",
     notice:
-      "GEMINI_API_KEY is not configured in .env.local. The Cybersecurity Assistant can still run deterministic rule-based analysis on local data, but cloud Gemini generative AI is offline.",
+      "GEMINI_API_KEY is not configured in .env.local. The Cybersecurity Assistant can still run deterministic rule-based analysis on local data, but cloud generative AI is offline.",
   };
 }
 

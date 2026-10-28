@@ -331,11 +331,7 @@ export function ChatMessageItem({
         <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-white/[0.04]">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold font-mono tracking-wider text-[#F5F5FA]">
-              {isUser
-                ? "Security Operator"
-                : isGeneral
-                ? "CYBERGUARD General AI"
-                : "CYBERGUARD Intelligence"}
+              {isUser ? "Security Operator" : "CYBERGUARD AI"}
             </span>
 
             {!isUser && (
@@ -350,17 +346,13 @@ export function ChatMessageItem({
                   }`}
                 >
                   {message.executionMode === "REAL_AI_GEMINI"
-                    ? "GOOGLE GEMINI"
+                    ? isGeneral
+                      ? "GENERAL AI"
+                      : "CYBERSECURITY INTELLIGENCE"
                     : message.executionMode === "DEMO_FALLBACK"
                     ? "NOTICE"
-                    : "LOCAL COPILOT"}
+                    : "AI ANALYSIS"}
                 </span>
-
-                {message.modelIdentifier && (
-                  <span className="hidden sm:inline px-1.5 py-0.5 rounded text-[9px] font-mono text-[#9CA3B5] bg-[#08090D] border border-white/[0.08]">
-                    {message.modelIdentifier}
-                  </span>
-                )}
               </div>
             )}
           </div>

@@ -35,8 +35,8 @@ function AuthCallbackContent() {
           if (res.success) {
             setStatus("success");
             setTimeout(() => {
-              router.push("/dashboard");
-            }, 1200);
+              window.location.href = "/dashboard";
+            }, 1000);
           } else {
             setStatus("error");
             setErrorMessage(res.message || "Failed to finalize OAuth session.");

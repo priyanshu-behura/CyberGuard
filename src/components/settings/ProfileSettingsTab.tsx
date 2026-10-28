@@ -196,8 +196,11 @@ export function ProfileSettingsTab({ profile, onSave }: ProfileSettingsTabProps)
         {showLogoutConfirm ? (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => signOut()}
-              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors"
+              onClick={async () => {
+                await signOut();
+                window.location.href = "/login";
+              }}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer"
             >
               Confirm Log Out
             </button>

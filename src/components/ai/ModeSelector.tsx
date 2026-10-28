@@ -64,7 +64,7 @@ export function ModeSelector({
         </button>
       </div>
 
-      {/* Model & Provider Badge */}
+      {/* CYBERGUARD Identity Badge */}
       <div className="flex items-center gap-2 self-end sm:self-auto px-3 py-1.5 rounded-xl bg-[#08090D] border border-white/10 text-[11px] font-mono">
         <span
           className={`w-2 h-2 rounded-full ${
@@ -74,7 +74,7 @@ export function ModeSelector({
           }`}
         />
         <span className="text-[#F5F5FA] font-medium">
-          {providerStatus?.isConfigured ? providerStatus.modelName : "Local Heuristic Engine"}
+          CYBERGUARD AI
         </span>
         <span
           className={`px-1.5 py-0.5 rounded text-[9px] uppercase font-bold ${
@@ -83,7 +83,7 @@ export function ModeSelector({
               : "bg-[#39DCE5]/15 text-[#39DCE5] border border-[#39DCE5]/30"
           }`}
         >
-          {providerStatus?.isConfigured ? "GOOGLE GEMINI" : "OFFLINE READY"}
+          {providerStatus?.isConfigured ? "AI ASSISTANT" : "OFFLINE READY"}
         </span>
       </div>
     </div>

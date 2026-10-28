@@ -11,6 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   signIn: (credentials: SignInInput) => Promise<AuthResponse>;
   signUp: (data: SignUpInput) => Promise<AuthResponse>;
+  signInWithGoogleDemo: () => Promise<AuthResponse>;
   signOut: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; message: string; errorCode?: string }>;
   googleOAuthConfig: GoogleOAuthConfig;
@@ -28,12 +29,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authUrl: null,
   });
 
-  // Initialize session from storage on mount
+  // Initialize session from storage on mount & keep cookies synchronized
   useEffect(() => {
     try {
       const stored = authService.getStoredSession();
       if (stored) {
         setSession(stored);
+        authService.syncCookie(stored);
       }
       setGoogleConfig(authService.getGoogleOAuthConfig());
     } catch (e) {
@@ -69,6 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const signInWithGoogleDemo = useCallback(async (): Promise<AuthResponse> => {
+    setIsLoading(true);
+    try {
+      const response = await authService.signInWithGoogleDemo();
+      if (response.success && response.session) {
+        setSession(response.session);
+      }
+      return response;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const signOut = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
@@ -95,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!session?.token,
         signIn,
         signUp,
+        signInWithGoogleDemo,
         signOut,
         requestPasswordReset,
         googleOAuthConfig: googleConfig,

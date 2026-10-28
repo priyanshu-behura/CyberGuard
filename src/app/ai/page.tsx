@@ -367,7 +367,7 @@ export default function AICenterPage() {
                     </h2>
                     <p className="text-xs md:text-sm text-slate-400 max-w-lg mx-auto">
                       {mode === "general"
-                        ? "Ask about coding, algorithms, technical documentation, writing, or open-ended reasoning powered by Google Gemini."
+                        ? "Ask about coding, algorithms, technical documentation, writing, or open-ended reasoning powered by CYBERGUARD AI."
                         : "Inspect verified platform incidents, audit authentication logs, verify suspicious links, and compile incident dossiers."}
                     </p>
                   </div>
@@ -410,7 +410,7 @@ export default function AICenterPage() {
                   <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
                   <span>
                     {mode === "general"
-                      ? "Generating response with Google Gemini..."
+                      ? "Generating response with CYBERGUARD AI..."
                       : "Correlating security telemetry and synthesizing analysis..."}
                   </span>
                 </div>
@@ -429,11 +429,7 @@ export default function AICenterPage() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={
-                    mode === "general"
-                      ? "Ask CYBERGUARD General AI anything (e.g. 'Explain OAuth PKCE flow', 'Debug TypeScript error', 'Summarize architecture')..."
-                      : "Ask Cybersecurity Intelligence (e.g. 'Investigate INC-001', 'Summarize security posture', 'Explain ATO alert')..."
-                  }
+                  placeholder="Ask CYBERGUARD AI anything about coding, writing, reasoning, problem-solving, or cybersecurity..."
                   rows={1}
                   className="w-full bg-transparent resize-none text-xs text-white placeholder-slate-500 focus:outline-none min-h-[44px] max-h-36 py-2 px-1 leading-relaxed"
                 />

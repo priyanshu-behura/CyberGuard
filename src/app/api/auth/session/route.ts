@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
+    console.error("POST /api/auth/session error:", error);
     return NextResponse.json(
-      { error: "Failed to process session sync" },
+      { error: "Failed to process session sync", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

@@ -41,8 +41,8 @@ export function AIAssistantSettingsTab({ ai, onSave }: AIAssistantSettingsTabPro
         setProviderStatus(json.status);
         setTestResult(
           json.status.isConfigured
-            ? `Connection Verified: Active cloud model ${json.status.modelName}`
-            : `Verified: Operating in Deterministic Heuristic Copilot mode`
+            ? "Connection Verified: CYBERGUARD Cloud AI operational"
+            : "Verified: Operating in Deterministic Heuristic Copilot mode"
         );
       }
     } catch {
@@ -117,7 +117,9 @@ export function AIAssistantSettingsTab({ ai, onSave }: AIAssistantSettingsTabPro
           <div className="flex items-center justify-between text-xs">
             <span className="font-mono text-slate-400">Engine / Identifier:</span>
             <span className="font-mono text-white font-bold">
-              {providerStatus?.modelName || "cyberguard-heuristic-copilot-v1"}
+              {providerStatus?.isConfigured
+                ? "CYBERGUARD Cloud AI Engine"
+                : "CYBERGUARD Deterministic Engine"}
             </span>
           </div>
 

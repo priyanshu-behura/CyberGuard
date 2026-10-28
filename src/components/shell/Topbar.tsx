@@ -102,7 +102,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
   const handleSignOut = async () => {
     setUserMenuOpen(false);
     await signOut();
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   const displayName = user?.name || "Security Analyst";
